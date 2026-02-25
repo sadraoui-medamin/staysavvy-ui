@@ -33,7 +33,7 @@ export default function HotelDetails() {
       <div className="pt-20">
         {/* Image Gallery */}
         <div className="relative h-[50vh] md:h-[60vh] overflow-hidden">
-          <img src={hotel.images[currentImage]} alt={hotel.name} className="w-full h-full object-cover" />
+          <img src={hotel.images[currentImage]} alt={hotel.name} decoding="async" className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-foreground/30 to-transparent" />
           {hotel.images.length > 1 && (
             <>
