@@ -23,7 +23,7 @@ const Index = () => {
 
       {/* Hero */}
       <section className="relative h-[85vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-        <img src={heroImg} alt="Luxury resort" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={heroImg} alt="Luxury resort" className="absolute inset-0 w-full h-full object-cover" fetchPriority="high" decoding="async" />
         <div className="absolute inset-0 bg-gradient-to-b from-foreground/50 via-foreground/30 to-foreground/60" />
         <div className="relative z-10 container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground mb-4 animate-fade-in leading-tight">
@@ -83,7 +83,7 @@ const Index = () => {
               onClick={() => navigate(`/search?q=${encodeURIComponent(dest.name)}`)}
               className="group relative rounded-xl overflow-hidden aspect-[3/4] hover-lift text-left"
             >
-              <img src={dest.image} alt={dest.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              <img src={dest.image} alt={dest.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
               <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-transparent to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-5">
                 <h3 className="text-xl font-display font-bold text-primary-foreground">{dest.name}</h3>

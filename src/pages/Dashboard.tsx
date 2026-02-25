@@ -53,7 +53,7 @@ export default function Dashboard() {
               {myBookings.map((booking) => (
                 <div key={booking.id} className="bg-card rounded-xl shadow-card overflow-hidden">
                   <div className="flex flex-col md:flex-row">
-                    <img src={booking.image} alt={booking.hotelName} className="w-full md:w-48 h-40 md:h-auto object-cover" />
+                    <img src={booking.image} alt={booking.hotelName} loading="lazy" decoding="async" className="w-full md:w-48 h-40 md:h-auto object-cover" />
                     <div className="flex-1 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">

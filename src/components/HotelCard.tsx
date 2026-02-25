@@ -10,6 +10,8 @@ export function HotelCard({ hotel }: { hotel: Hotel }) {
           <img
             src={hotel.image}
             alt={hotel.name}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
           <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1">
