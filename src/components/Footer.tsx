@@ -17,27 +17,27 @@ export function Footer() {
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-primary-foreground/80">Explore</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/60">
               <li><Link to="/search" className="hover:text-gold transition-colors">Search Hotels</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Destinations</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Deals & Offers</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Travel Guides</Link></li>
+              <li><Link to="/destinations" className="hover:text-gold transition-colors">Destinations</Link></li>
+              <li><Link to="/deals" className="hover:text-gold transition-colors">Deals & Offers</Link></li>
+              <li><Link to="/guides" className="hover:text-gold transition-colors">Travel Guides</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-primary-foreground/80">Company</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/60">
-              <li><Link to="/" className="hover:text-gold transition-colors">About Us</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Careers</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Press</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Contact</Link></li>
+              <li><Link to="/about" className="hover:text-gold transition-colors">About Us</Link></li>
+              <li><Link to="/careers" className="hover:text-gold transition-colors">Careers</Link></li>
+              <li><Link to="/press" className="hover:text-gold transition-colors">Press</Link></li>
+              <li><Link to="/contact" className="hover:text-gold transition-colors">Contact</Link></li>
             </ul>
           </div>
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-primary-foreground/80">Support</h4>
             <ul className="space-y-2 text-sm text-primary-foreground/60">
-              <li><Link to="/" className="hover:text-gold transition-colors">Help Center</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Terms of Service</Link></li>
-              <li><Link to="/" className="hover:text-gold transition-colors">Cancellation Policy</Link></li>
+              <li><Link to="/help" className="hover:text-gold transition-colors">Help Center</Link></li>
+              <li><Link to="/privacy" className="hover:text-gold transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-gold transition-colors">Terms of Service</Link></li>
+              <li><Link to="/cancellation-policy" className="hover:text-gold transition-colors">Cancellation Policy</Link></li>
             </ul>
           </div>
         </div>
