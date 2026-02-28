@@ -279,10 +279,10 @@ const Index = () => {
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="bg-accent text-accent-foreground hover:bg-gold-light font-semibold h-12 px-8 gap-2">
+                <Button size="lg" className="bg-accent text-accent-foreground hover:bg-gold-light font-semibold h-12 px-8 gap-2" onClick={() => navigate("/partner-register")}>
                   Join as a Partner <ChevronRight size={16} />
                 </Button>
-                <Button size="lg" variant="outline" className="h-12 px-8">
+                <Button size="lg" variant="outline" className="h-12 px-8" onClick={() => navigate("/partner-program")}>
                   Learn More
                 </Button>
               </div>

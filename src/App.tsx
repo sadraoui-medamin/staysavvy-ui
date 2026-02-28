@@ -19,6 +19,8 @@ import HelpCenter from "./pages/HelpCenter";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import CancellationPolicy from "./pages/CancellationPolicy";
+import PartnerProgram from "./pages/PartnerProgram";
+import PartnerRegister from "./pages/PartnerRegister";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +48,8 @@ const App = () => (
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+          <Route path="/partner-program" element={<PartnerProgram />} />
+          <Route path="/partner-register" element={<PartnerRegister />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
