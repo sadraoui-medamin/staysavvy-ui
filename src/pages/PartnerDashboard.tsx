@@ -2,17 +2,21 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
-  LayoutDashboard, CalendarCheck, Building2, BarChart3, Users, Bell,
-  HelpCircle, Settings, User, LogOut, ChevronDown, TrendingUp,
-  DollarSign, Eye, Star, Moon, Sun, ArrowUpRight, Plus,
+  LayoutDashboard, CalendarCheck, Building2, BarChart3, Users,
+  Settings, User, LogOut, ChevronDown, Moon, Sun, ArrowUpRight,
+  DollarSign,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import PartnerOverview from "@/components/partner/PartnerOverview";
 import PartnerBookings from "@/components/partner/PartnerBookings";
 import PartnerProperties from "@/components/partner/PartnerProperties";
 import PartnerTeam from "@/components/partner/PartnerTeam";
+import PartnerSettings from "@/components/partner/PartnerSettings";
+import PartnerNotifications from "@/components/partner/PartnerNotifications";
+import PartnerHelpDropdown from "@/components/partner/PartnerHelpDropdown";
 
 const navItems = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
@@ -20,35 +24,8 @@ const navItems = [
   { key: "properties", label: "Properties", icon: Building2 },
   { key: "reports", label: "Reports", icon: BarChart3 },
   { key: "team", label: "Team", icon: Users },
+  { key: "settings", label: "Settings", icon: Settings },
 ];
-
-const stats = [
-  { label: "Total Bookings", value: "1,284", change: "+12%", icon: CalendarCheck, gradient: "from-accent/20 to-accent/5" },
-  { label: "Revenue", value: "$86,420", change: "+8.5%", icon: DollarSign, gradient: "from-primary/20 to-primary/5" },
-  { label: "Page Views", value: "23,891", change: "+22%", icon: Eye, gradient: "from-accent/15 to-accent/5" },
-  { label: "Avg Rating", value: "4.7", change: "+0.2", icon: Star, gradient: "from-primary/15 to-primary/5" },
-];
-
-const recentBookings = [
-  { id: "BK-001", guest: "Alice Martin", hotel: "Grand Hotel Paris", checkIn: "2026-03-05", status: "Confirmed", amount: "$540" },
-  { id: "BK-002", guest: "Robert Chen", hotel: "Grand Hotel Paris", checkIn: "2026-03-10", status: "Pending", amount: "$980" },
-  { id: "BK-003", guest: "Sarah Johnson", hotel: "Seaside Resort", checkIn: "2026-03-12", status: "Confirmed", amount: "$720" },
-];
-
-const overviewProperties = [
-  { name: "Grand Hotel Paris", location: "Paris, France", rooms: 120, rating: 4.8, bookings: 342, status: "Active", occupancy: 87 },
-  { name: "Seaside Resort", location: "Nice, France", rooms: 85, rating: 4.6, bookings: 218, status: "Active", occupancy: 74 },
-  { name: "Mountain Lodge", location: "Chamonix, France", rooms: 45, rating: 4.9, bookings: 156, status: "Active", occupancy: 92 },
-];
-
-const statusColor = (status: string) => {
-  switch (status) {
-    case "Confirmed": return "bg-accent/10 text-accent border border-accent/20";
-    case "Pending": return "bg-muted text-muted-foreground border border-border";
-    case "Active": return "bg-accent/10 text-accent border border-accent/20";
-    default: return "bg-muted text-muted-foreground border border-border";
-  }
-};
 
 const PartnerDashboard = () => {
   const navigate = useNavigate();
@@ -86,12 +63,8 @@ const PartnerDashboard = () => {
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-xl" onClick={toggleTheme}>
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-xl relative">
-              <Bell size={18} />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-destructive ring-2 ring-card" />
-            </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-xl"><HelpCircle size={18} /></Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-xl"><Settings size={18} /></Button>
+            <PartnerNotifications />
+            <PartnerHelpDropdown />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2.5 ml-2 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-all duration-200 border border-transparent hover:border-border">
@@ -113,7 +86,7 @@ const PartnerDashboard = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5"><User size={16} /> Profile</DropdownMenuItem>
-                <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5"><Settings size={16} /> Account Settings</DropdownMenuItem>
+                <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5" onClick={() => setActiveTab("settings")}><Settings size={16} /> Account Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5"><Building2 size={16} /> Switch Account</DropdownMenuItem>
                 <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5 text-destructive focus:text-destructive"><LogOut size={16} /> Log Out</DropdownMenuItem>
@@ -139,109 +112,11 @@ const PartnerDashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 p-4 lg:p-8 max-w-[1400px] mx-auto w-full">
-        {/* Overview */}
-        {activeTab === "overview" && (
-          <div className="space-y-8 animate-fade-in">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
-              <div>
-                <p className="text-sm text-muted-foreground font-medium">Welcome back,</p>
-                <h1 className="text-3xl font-display font-bold text-foreground">Dashboard</h1>
-              </div>
-              <p className="text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg">Last updated: Mar 9, 2026</p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {stats.map((s) => (
-                <div key={s.label} className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${s.gradient} border border-border/50 p-5 group hover:shadow-card-hover transition-all duration-300`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-card/80 backdrop-blur-sm flex items-center justify-center shadow-sm">
-                      <s.icon size={18} className="text-foreground" />
-                    </div>
-                    <span className="flex items-center gap-1 text-xs font-semibold text-accent bg-accent/10 px-2 py-1 rounded-full">
-                      <TrendingUp size={10} /> {s.change}
-                    </span>
-                  </div>
-                  <p className="text-3xl font-bold text-foreground tracking-tight">{s.value}</p>
-                  <p className="text-sm text-muted-foreground mt-1">{s.label}</p>
-                </div>
-              ))}
-            </div>
-            {/* Recent Bookings */}
-            <div className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm overflow-hidden">
-              <div className="flex items-center justify-between p-5 border-b border-border/60">
-                <h2 className="font-display font-bold text-foreground text-lg">Recent Bookings</h2>
-                <Button variant="ghost" size="sm" className="text-accent gap-1 hover:bg-accent/10 rounded-lg" onClick={() => setActiveTab("bookings")}>
-                  View All <ArrowUpRight size={14} />
-                </Button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border/40">
-                      <th className="text-left px-5 py-3.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">ID</th>
-                      <th className="text-left px-5 py-3.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">Guest</th>
-                      <th className="text-left px-5 py-3.5 font-medium text-muted-foreground text-xs uppercase tracking-wider hidden md:table-cell">Hotel</th>
-                      <th className="text-left px-5 py-3.5 font-medium text-muted-foreground text-xs uppercase tracking-wider hidden sm:table-cell">Check-in</th>
-                      <th className="text-left px-5 py-3.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">Status</th>
-                      <th className="text-right px-5 py-3.5 font-medium text-muted-foreground text-xs uppercase tracking-wider">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentBookings.map((b) => (
-                      <tr key={b.id} className="border-b border-border/30 hover:bg-muted/30 transition-colors">
-                        <td className="px-5 py-4 font-mono text-xs text-muted-foreground">{b.id}</td>
-                        <td className="px-5 py-4 font-medium text-foreground">{b.guest}</td>
-                        <td className="px-5 py-4 text-muted-foreground hidden md:table-cell">{b.hotel}</td>
-                        <td className="px-5 py-4 text-muted-foreground hidden sm:table-cell">{b.checkIn}</td>
-                        <td className="px-5 py-4"><span className={`px-2.5 py-1 rounded-md text-xs font-medium ${statusColor(b.status)}`}>{b.status}</span></td>
-                        <td className="px-5 py-4 text-right font-semibold text-foreground">{b.amount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {/* Properties Overview */}
-            <div className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm overflow-hidden">
-              <div className="flex items-center justify-between p-5 border-b border-border/60">
-                <h2 className="font-display font-bold text-foreground text-lg">Your Properties</h2>
-                <Button variant="ghost" size="sm" className="text-accent gap-1 hover:bg-accent/10 rounded-lg" onClick={() => setActiveTab("properties")}>
-                  Manage <ArrowUpRight size={14} />
-                </Button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5">
-                {overviewProperties.map((p) => (
-                  <div key={p.name} className="rounded-xl border border-border/50 p-5 hover:shadow-card-hover hover:border-accent/30 transition-all duration-300 group bg-card">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors">{p.name}</h3>
-                        <p className="text-xs text-muted-foreground">{p.location}</p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${statusColor(p.status)}`}>{p.status}</span>
-                    </div>
-                    <div className="mt-3 mb-1">
-                      <div className="flex justify-between text-xs mb-1.5">
-                        <span className="text-muted-foreground">Occupancy</span>
-                        <span className="font-semibold text-foreground">{p.occupancy}%</span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-accent to-gold-light rounded-full transition-all duration-500" style={{ width: `${p.occupancy}%` }} />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground mt-3 pt-3 border-t border-border/40">
-                      <span>{p.rooms} rooms</span>
-                      <span className="flex items-center gap-0.5"><Star size={11} className="text-accent" />{p.rating}</span>
-                      <span>{p.bookings} bookings</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
+        {activeTab === "overview" && <PartnerOverview onNavigate={setActiveTab} />}
         {activeTab === "bookings" && <PartnerBookings />}
         {activeTab === "properties" && <PartnerProperties />}
         {activeTab === "team" && <PartnerTeam />}
+        {activeTab === "settings" && <PartnerSettings />}
 
         {/* Reports */}
         {activeTab === "reports" && (
