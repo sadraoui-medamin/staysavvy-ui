@@ -135,6 +135,15 @@ const PartnerProperties = () => {
     toast({ title: "Deletion Cancelled", description: "Property restored to active." });
   };
 
+  const toggleStatus = (id: string) => {
+    setProperties(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const newStatus = p.status === "Active" ? "Inactive" as const : "Active" as const;
+      return { ...p, status: newStatus };
+    }));
+    toast({ title: "Status Updated", description: "Property status has been changed." });
+  };
+
   const statCards = [
     { label: "Total Properties", value: stats.total, icon: Building2, color: "text-primary" },
     { label: "Active", value: stats.active, icon: CheckCircle, color: "text-accent" },
