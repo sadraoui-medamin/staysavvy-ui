@@ -135,6 +135,15 @@ const PartnerProperties = () => {
     toast({ title: "Deletion Cancelled", description: "Property restored to active." });
   };
 
+  const toggleStatus = (id: string) => {
+    setProperties(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      const newStatus = p.status === "Active" ? "Inactive" as const : "Active" as const;
+      return { ...p, status: newStatus };
+    }));
+    toast({ title: "Status Updated", description: "Property status has been changed." });
+  };
+
   const statCards = [
     { label: "Total Properties", value: stats.total, icon: Building2, color: "text-primary" },
     { label: "Active", value: stats.active, icon: CheckCircle, color: "text-accent" },
@@ -250,13 +259,24 @@ const PartnerProperties = () => {
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-5">
+              <div className="flex gap-2 mt-5 flex-wrap">
                 <Button variant="outline" size="sm" className="flex-1 rounded-lg gap-1" onClick={() => setViewProperty(p)}>
                   <Eye size={14} /> View
                 </Button>
                 <Button variant="outline" size="sm" className="flex-1 rounded-lg gap-1" onClick={() => openEdit(p)}>
                   <Pencil size={14} /> Edit
                 </Button>
+                {p.status !== "PendingDeletion" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-lg gap-1 text-primary border-primary/30 hover:bg-primary/5"
+                    onClick={() => toggleStatus(p.id)}
+                  >
+                    {p.status === "Active" ? <XCircle size={14} /> : <CheckCircle size={14} />}
+                    {p.status === "Active" ? "Deactivate" : "Activate"}
+                  </Button>
+                )}
                 {p.status !== "PendingDeletion" && (
                   <Button variant="outline" size="sm" className="rounded-lg gap-1 text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => requestDelete(p)}>
                     <Trash2 size={14} />

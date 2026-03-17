@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard, CalendarCheck, Building2, BarChart3, Users,
-  Settings, User, LogOut, ChevronDown, Moon, Sun, ArrowUpRight,
-  DollarSign,
+  Settings, User, LogOut, ChevronDown, Moon, Sun, MessageSquare,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -17,6 +16,9 @@ import PartnerTeam from "@/components/partner/PartnerTeam";
 import PartnerSettings from "@/components/partner/PartnerSettings";
 import PartnerNotifications from "@/components/partner/PartnerNotifications";
 import PartnerHelpDropdown from "@/components/partner/PartnerHelpDropdown";
+import PartnerReports from "@/components/partner/PartnerReports";
+import PartnerProfile from "@/components/partner/PartnerProfile";
+import PartnerChat from "@/components/partner/PartnerChat";
 
 const navItems = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
@@ -24,6 +26,7 @@ const navItems = [
   { key: "properties", label: "Properties", icon: Building2 },
   { key: "reports", label: "Reports", icon: BarChart3 },
   { key: "team", label: "Team", icon: Users },
+  { key: "chat", label: "Chat", icon: MessageSquare },
   { key: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -85,7 +88,7 @@ const PartnerDashboard = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5"><User size={16} /> Profile</DropdownMenuItem>
+                <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5" onClick={() => setActiveTab("profile")}><User size={16} /> Profile</DropdownMenuItem>
                 <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5" onClick={() => setActiveTab("settings")}><Settings size={16} /> Account Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5"><Building2 size={16} /> Switch Account</DropdownMenuItem>
@@ -115,37 +118,11 @@ const PartnerDashboard = () => {
         {activeTab === "overview" && <PartnerOverview onNavigate={setActiveTab} />}
         {activeTab === "bookings" && <PartnerBookings />}
         {activeTab === "properties" && <PartnerProperties />}
+        {activeTab === "reports" && <PartnerReports />}
         {activeTab === "team" && <PartnerTeam />}
+        {activeTab === "chat" && <PartnerChat />}
         {activeTab === "settings" && <PartnerSettings />}
-
-        {/* Reports */}
-        {activeTab === "reports" && (
-          <div className="space-y-6 animate-fade-in">
-            <div>
-              <h1 className="text-3xl font-display font-bold text-foreground">Reports</h1>
-              <p className="text-muted-foreground text-sm">Analyze your performance metrics</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {[
-                { title: "Revenue Report", desc: "Monthly and yearly revenue breakdown", icon: DollarSign },
-                { title: "Booking Analytics", desc: "Booking trends, sources, and conversion rates", icon: BarChart3 },
-                { title: "Guest Demographics", desc: "Understand your guest profiles and preferences", icon: Users },
-                { title: "Occupancy Rates", desc: "Room occupancy by property and time period", icon: Building2 },
-              ].map((r) => (
-                <div key={r.title} className="bg-card rounded-2xl border border-border/50 p-6 flex items-start gap-5 hover:shadow-card-hover hover:border-accent/30 transition-all duration-300 cursor-pointer group">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shrink-0 group-hover:from-accent/30 transition-all">
-                    <r.icon size={22} className="text-accent" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors">{r.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1">{r.desc}</p>
-                  </div>
-                  <ArrowUpRight size={16} className="text-muted-foreground group-hover:text-accent transition-colors mt-1 shrink-0" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {activeTab === "profile" && <PartnerProfile />}
       </main>
     </div>
   );
