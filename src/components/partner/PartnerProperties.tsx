@@ -85,6 +85,7 @@ const PartnerProperties = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sort, setSort] = useState("name-asc");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [viewProperty, setViewProperty] = useState<Property | null>(null);
   const [editProperty, setEditProperty] = useState<Property | null>(null);
   const [isCreating, setIsCreating] = useState(false);
