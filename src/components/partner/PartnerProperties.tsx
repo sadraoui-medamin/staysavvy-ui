@@ -44,6 +44,7 @@ const sortOptions = [
   { label: "Name A-Z", value: "name-asc" },
   { label: "Name Z-A", value: "name-desc" },
   { label: "Rating: High→Low", value: "rating-desc" },
+  { label: "Most Reserved", value: "bookings-desc" },
   { label: "Occupancy: High→Low", value: "occ-desc" },
 ];
 
