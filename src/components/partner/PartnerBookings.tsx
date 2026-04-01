@@ -135,20 +135,46 @@ const PartnerBookings = () => {
     toast({ title: "PDF Exported", description: "Bookings report downloaded." });
   };
 
+  // Automatic status engine: updates statuses based on dates
+  useEffect(() => {
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    setBookings(prev => prev.map(b => {
+      // Auto-confirm pending bookings (simulate availability check passed)
+      if (b.status === "Pending" && b.checkIn > today) {
+        return { ...b, status: "Confirmed" as const, notes: [...b.notes, `[${now.toLocaleString()}] Auto-confirmed: availability verified`] };
+      }
+      // Auto check-in on check-in date
+      if (b.status === "Confirmed" && b.checkIn <= today && b.checkOut > today) {
+        return { ...b, status: "CheckedIn" as const, notes: [...b.notes, `[${now.toLocaleString()}] Auto checked-in on arrival date`] };
+      }
+      // Auto check-out on check-out date
+      if (b.status === "CheckedIn" && b.checkOut <= today) {
+        return { ...b, status: "CheckedOut" as const, notes: [...b.notes, `[${now.toLocaleString()}] Auto checked-out on departure date`] };
+      }
+      // Auto complete after checkout
+      if (b.status === "CheckedOut") {
+        return { ...b, status: "Completed" as const, notes: [...b.notes, `[${now.toLocaleString()}] Auto-completed after checkout`] };
+      }
+      return b;
+    }));
+  }, []); // runs once on mount
+
+  const getStatusInfo = (b: PartnerBooking) => {
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    if (b.status === "Confirmed" && b.checkIn > today) return "Awaiting guest arrival";
+    if (b.status === "CheckedIn") return "Guest currently staying";
+    if (b.status === "Completed") return "Stay completed";
+    return null;
+  };
+
   const getActions = (b: PartnerBooking) => {
+    // All status transitions are automatic; only manual override for viewing
     const actions: { label: string; icon: typeof Check; onClick: () => void; variant: string }[] = [];
+    // Allow manual reject for pending (edge case where system hasn't auto-confirmed yet)
     if (b.status === "Pending") {
-      actions.push({ label: "Accept", icon: Check, onClick: () => updateStatus(b.id, "Confirmed"), variant: "text-accent" });
       actions.push({ label: "Reject", icon: X, onClick: () => setRejectConfirm(b), variant: "text-destructive" });
-    }
-    if (b.status === "Confirmed") {
-      actions.push({ label: "Check In", icon: LogIn, onClick: () => updateStatus(b.id, "CheckedIn"), variant: "text-blue-600" });
-    }
-    if (b.status === "CheckedIn") {
-      actions.push({ label: "Check Out", icon: LogOut, onClick: () => updateStatus(b.id, "CheckedOut"), variant: "text-indigo-600" });
-    }
-    if (b.status === "CheckedOut") {
-      actions.push({ label: "Complete", icon: CheckCircle, onClick: () => updateStatus(b.id, "Completed"), variant: "text-primary" });
     }
     return actions;
   };
