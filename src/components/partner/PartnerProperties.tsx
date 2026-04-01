@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import {
   Search, Plus, Building2, Star, Eye, Pencil, Trash2, MapPin,
   BedDouble, Users, XCircle, AlertTriangle, CheckCircle, Clock,
-  ImagePlus, X as XIcon,
+  ImagePlus, X as XIcon, LayoutGrid, List,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -44,6 +44,7 @@ const sortOptions = [
   { label: "Name A-Z", value: "name-asc" },
   { label: "Name Z-A", value: "name-desc" },
   { label: "Rating: High→Low", value: "rating-desc" },
+  { label: "Most Reserved", value: "bookings-desc" },
   { label: "Occupancy: High→Low", value: "occ-desc" },
 ];
 
@@ -84,6 +85,7 @@ const PartnerProperties = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [sort, setSort] = useState("name-asc");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [viewProperty, setViewProperty] = useState<Property | null>(null);
   const [editProperty, setEditProperty] = useState<Property | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -111,6 +113,7 @@ const PartnerProperties = () => {
     if (sort === "name-asc") result.sort((a, b) => a.name.localeCompare(b.name));
     else if (sort === "name-desc") result.sort((a, b) => b.name.localeCompare(a.name));
     else if (sort === "rating-desc") result.sort((a, b) => b.rating - a.rating);
+    else if (sort === "bookings-desc") result.sort((a, b) => b.bookings - a.bookings);
     else if (sort === "occ-desc") result.sort((a, b) => b.occupancy - a.occupancy);
     return result;
   }, [properties, search, statusFilter, sort]);
@@ -233,16 +236,68 @@ const PartnerProperties = () => {
         <select value={sort} onChange={e => setSort(e.target.value)} className="h-10 px-3 rounded-xl border border-border bg-card text-foreground text-sm">
           {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
+        <div className="flex border border-border rounded-xl overflow-hidden">
+          <button onClick={() => setViewMode("grid")} className={`px-3 py-2 transition-colors ${viewMode === "grid" ? "bg-foreground text-background" : "bg-card text-muted-foreground hover:bg-muted"}`}>
+            <LayoutGrid size={16} />
+          </button>
+          <button onClick={() => setViewMode("list")} className={`px-3 py-2 transition-colors ${viewMode === "list" ? "bg-foreground text-background" : "bg-card text-muted-foreground hover:bg-muted"}`}>
+            <List size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" : "space-y-4"}>
         {filtered.length === 0 ? (
           <div className="col-span-full text-center py-16 bg-card rounded-2xl border border-border/50">
             <Building2 size={40} className="mx-auto text-muted-foreground mb-3" />
             <h3 className="text-lg font-semibold text-foreground mb-1">No properties found</h3>
             <p className="text-muted-foreground text-sm">Try adjusting your search or filters</p>
           </div>
+        ) : viewMode === "list" ? (
+          filtered.map(p => (
+            <div key={p.id} className={`bg-card rounded-2xl border overflow-hidden hover:shadow-card-hover transition-all duration-300 group ${p.status === "PendingDeletion" ? "border-destructive/30 bg-destructive/5" : "border-border/50 hover:border-accent/30"}`}>
+              <div className="flex items-center gap-5 p-5">
+                {p.images.length > 0 && (
+                  <div className="w-28 h-20 rounded-xl overflow-hidden shrink-0">
+                    <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-display font-bold text-foreground truncate">{p.name}</h3>
+                    <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${statusColor(p.status)}`}>{statusLabel(p.status)}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin size={12} /> {p.location}</p>
+                </div>
+                <div className="flex items-center gap-6 text-sm shrink-0">
+                  <div className="text-center"><p className="font-bold text-foreground">{p.rooms}</p><p className="text-xs text-muted-foreground">Rooms</p></div>
+                  <div className="text-center"><p className="font-bold text-foreground flex items-center gap-0.5"><Star size={12} className="text-accent" />{p.rating}</p><p className="text-xs text-muted-foreground">Rating</p></div>
+                  <div className="text-center"><p className="font-bold text-foreground">{p.bookings}</p><p className="text-xs text-muted-foreground">Bookings</p></div>
+                  <div className="text-center"><p className="font-bold text-foreground">{p.occupancy}%</p><p className="text-xs text-muted-foreground">Occ.</p></div>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                  <Button variant="outline" size="sm" className="rounded-lg" onClick={() => { setViewProperty(p); setViewImageIndex(0); }}><Eye size={14} /></Button>
+                  <Button variant="outline" size="sm" className="rounded-lg" onClick={() => openEdit(p)}><Pencil size={14} /></Button>
+                  {p.status !== "PendingDeletion" && (
+                    <Button variant="outline" size="sm" className="rounded-lg" onClick={() => toggleStatus(p.id)}>
+                      {p.status === "Active" ? <XCircle size={14} /> : <CheckCircle size={14} />}
+                    </Button>
+                  )}
+                  {p.status !== "PendingDeletion" && (
+                    <Button variant="outline" size="sm" className="rounded-lg text-destructive" onClick={() => requestDelete(p)}><Trash2 size={14} /></Button>
+                  )}
+                </div>
+              </div>
+              {p.status === "PendingDeletion" && (
+                <div className="flex items-center gap-2 mx-5 mb-4 p-2.5 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <AlertTriangle size={14} className="text-destructive shrink-0" />
+                  <p className="text-xs text-destructive">{getDaysRemaining(p)} day{getDaysRemaining(p) !== 1 ? "s" : ""} until permanent deletion</p>
+                  <button onClick={() => cancelDelete(p.id)} className="ml-auto text-xs font-medium text-destructive underline">Cancel</button>
+                </div>
+              )}
+            </div>
+          ))
         ) : (
           filtered.map(p => (
             <div key={p.id} className={`bg-card rounded-2xl border overflow-hidden hover:shadow-card-hover transition-all duration-300 group ${p.status === "PendingDeletion" ? "border-destructive/30 bg-destructive/5" : "border-border/50 hover:border-accent/30"}`}>

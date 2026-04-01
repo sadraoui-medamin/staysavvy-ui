@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, CalendarDays, Users, MapPin, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchAutocomplete } from "@/components/SearchAutocomplete";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { DestinationsSection } from "@/components/landing/DestinationsSection";
@@ -87,16 +88,7 @@ const Index = () => {
             style={{ animationDelay: "0.2s" }}
           >
             <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-3">
-              <div className="relative">
-                <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
-                <Input
-                  placeholder="Where are you going?"
-                  className="pl-10 h-13 bg-muted/50 border-0 text-foreground rounded-xl text-sm"
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                />
-              </div>
+              <SearchAutocomplete />
               <div className="relative">
                 <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
                 <Input
