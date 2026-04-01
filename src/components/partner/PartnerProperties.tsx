@@ -236,6 +236,14 @@ const PartnerProperties = () => {
         <select value={sort} onChange={e => setSort(e.target.value)} className="h-10 px-3 rounded-xl border border-border bg-card text-foreground text-sm">
           {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
+        <div className="flex border border-border rounded-xl overflow-hidden">
+          <button onClick={() => setViewMode("grid")} className={`px-3 py-2 transition-colors ${viewMode === "grid" ? "bg-foreground text-background" : "bg-card text-muted-foreground hover:bg-muted"}`}>
+            <LayoutGrid size={16} />
+          </button>
+          <button onClick={() => setViewMode("list")} className={`px-3 py-2 transition-colors ${viewMode === "list" ? "bg-foreground text-background" : "bg-card text-muted-foreground hover:bg-muted"}`}>
+            <List size={16} />
+          </button>
+        </div>
       </div>
 
       {/* Cards */}
