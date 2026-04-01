@@ -258,6 +258,9 @@ const PartnerBookings = () => {
                       <span className="flex items-center gap-1"><Calendar size={13} /> {b.checkIn} → {b.checkOut}</span>
                       <span>{b.guests} guests · {b.rooms} room{b.rooms > 1 ? "s" : ""}</span>
                     </div>
+                    {getStatusInfo(b) && (
+                      <p className="text-xs text-accent mt-1 flex items-center gap-1"><Clock size={12} /> {getStatusInfo(b)}</p>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-right">
