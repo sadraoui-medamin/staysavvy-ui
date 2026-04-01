@@ -113,6 +113,7 @@ const PartnerProperties = () => {
     if (sort === "name-asc") result.sort((a, b) => a.name.localeCompare(b.name));
     else if (sort === "name-desc") result.sort((a, b) => b.name.localeCompare(a.name));
     else if (sort === "rating-desc") result.sort((a, b) => b.rating - a.rating);
+    else if (sort === "bookings-desc") result.sort((a, b) => b.bookings - a.bookings);
     else if (sort === "occ-desc") result.sort((a, b) => b.occupancy - a.occupancy);
     return result;
   }, [properties, search, statusFilter, sort]);
