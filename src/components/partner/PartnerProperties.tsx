@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import {
   Search, Plus, Building2, Star, Eye, Pencil, Trash2, MapPin,
   BedDouble, Users, XCircle, AlertTriangle, CheckCircle, Clock,
-  ImagePlus, X as XIcon,
+  ImagePlus, X as XIcon, LayoutGrid, List,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
