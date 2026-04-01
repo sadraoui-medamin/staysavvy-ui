@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, CalendarDays, Users, MapPin, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SearchAutocomplete } from "@/components/SearchAutocomplete";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { DestinationsSection } from "@/components/landing/DestinationsSection";
