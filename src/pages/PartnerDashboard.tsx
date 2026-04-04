@@ -82,6 +82,7 @@ const PartnerDashboard = () => {
       case "team": return <PartnerTeam />;
       case "settings": return <PartnerSettings />;
       case "profile": return <PartnerProfile />;
+      case "help": return <PartnerHelp />;
       case "revenue": return <RevenueManager />;
       case "frontdesk": return <Receptionist />;
       case "guests": return <GuestRelations />;
