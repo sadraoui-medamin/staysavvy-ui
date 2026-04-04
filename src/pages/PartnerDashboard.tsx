@@ -136,7 +136,7 @@ const PartnerDashboard = () => {
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
             <PartnerNotifications currentRole={currentRole} />
-            <PartnerHelpDropdown />
+            <PartnerHelpDropdown onNavigateHelp={() => setActiveTab("help")} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2.5 ml-2 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-all duration-200 border border-transparent hover:border-border">
