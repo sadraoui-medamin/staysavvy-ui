@@ -24,6 +24,7 @@ import PartnerNotifications from "@/components/partner/PartnerNotifications";
 import PartnerHelpDropdown from "@/components/partner/PartnerHelpDropdown";
 import PartnerReports from "@/components/partner/PartnerReports";
 import PartnerProfile from "@/components/partner/PartnerProfile";
+import PartnerHelp from "@/components/partner/PartnerHelp";
 
 import RevenueManager from "@/components/partner/roles/RevenueManager";
 import Receptionist from "@/components/partner/roles/Receptionist";
