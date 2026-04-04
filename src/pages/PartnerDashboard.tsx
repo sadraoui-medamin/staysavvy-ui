@@ -134,7 +134,7 @@ const PartnerDashboard = () => {
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-xl" onClick={toggleTheme}>
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
-            <PartnerNotifications />
+            <PartnerNotifications currentRole={currentRole} />
             <PartnerHelpDropdown />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
