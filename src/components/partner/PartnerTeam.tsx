@@ -203,24 +203,26 @@ const PartnerTeam = () => {
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-3">
+        <div className="relative">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Search members..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-10 bg-card rounded-xl" />
         </div>
-        <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="h-10 px-3 rounded-xl border border-border bg-card text-foreground text-sm">
-          {roleFilters.map(r => <option key={r} value={r}>{r === "All" ? "All Roles" : r}</option>)}
-        </select>
-        <div className="flex gap-2 flex-wrap">
-          {statusFilters.map(s => (
-            <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${statusFilter === s ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}>
-              {s}
-            </button>
-          ))}
-        </div>
-        <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
-          <button onClick={() => setViewMode("grid")} className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"}`}><LayoutGrid size={16} /></button>
-          <button onClick={() => setViewMode("list")} className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"}`}><List size={16} /></button>
+        <div className="flex gap-2 flex-wrap items-center">
+          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="h-10 px-3 rounded-xl border border-border bg-card text-foreground text-sm">
+            {roleFilters.map(r => <option key={r} value={r}>{r === "All" ? "All Roles" : r}</option>)}
+          </select>
+          <div className="flex gap-1.5 overflow-x-auto pb-1 flex-1 min-w-0">
+            {statusFilters.map(s => (
+              <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 ${statusFilter === s ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}>
+                {s}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1 bg-muted/50 rounded-xl p-1 shrink-0">
+            <button onClick={() => setViewMode("grid")} className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"}`}><LayoutGrid size={16} /></button>
+            <button onClick={() => setViewMode("list")} className={`p-2 rounded-lg transition-all ${viewMode === "list" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"}`}><List size={16} /></button>
+          </div>
         </div>
       </div>
 

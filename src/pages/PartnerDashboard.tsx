@@ -24,6 +24,7 @@ import PartnerNotifications from "@/components/partner/PartnerNotifications";
 import PartnerHelpDropdown from "@/components/partner/PartnerHelpDropdown";
 import PartnerReports from "@/components/partner/PartnerReports";
 import PartnerProfile from "@/components/partner/PartnerProfile";
+import PartnerHelp from "@/components/partner/PartnerHelp";
 
 import RevenueManager from "@/components/partner/roles/RevenueManager";
 import Receptionist from "@/components/partner/roles/Receptionist";
@@ -81,6 +82,7 @@ const PartnerDashboard = () => {
       case "team": return <PartnerTeam />;
       case "settings": return <PartnerSettings />;
       case "profile": return <PartnerProfile />;
+      case "help": return <PartnerHelp />;
       case "revenue": return <RevenueManager />;
       case "frontdesk": return <Receptionist />;
       case "guests": return <GuestRelations />;
@@ -133,8 +135,8 @@ const PartnerDashboard = () => {
             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-xl" onClick={toggleTheme}>
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
-            <PartnerNotifications />
-            <PartnerHelpDropdown />
+            <PartnerNotifications currentRole={currentRole} />
+            <PartnerHelpDropdown onNavigateHelp={() => setActiveTab("help")} />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-2.5 ml-2 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-all duration-200 border border-transparent hover:border-border">
