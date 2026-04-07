@@ -12,6 +12,7 @@ const navLinks = [
   { to: "/", label: "Home" },
   { to: "/search", label: "Explore" },
   { to: "/dashboard", label: "My Trips" },
+  { to: "/guest-services", label: "Room Services" },
 ];
 
 export function Navbar() {
