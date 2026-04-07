@@ -55,6 +55,7 @@ const App = () => (
           <Route path="/partner-program" element={<PartnerProgram />} />
           <Route path="/partner-register" element={<PartnerRegister />} />
           <Route path="/partner-dashboard" element={<PartnerDashboard />} />
+          <Route path="/guest-services" element={<GuestServices />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
