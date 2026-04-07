@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import {
   CalendarCheck, DollarSign, Eye, Star, TrendingUp, ArrowUpRight,
   Plus, UserPlus, FileText, MessageSquare, Send, Calendar,
-  ChevronLeft, ChevronRight,
+  Activity, Clock, User, Building2, Shield, Settings,
 } from "lucide-react";
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis,
@@ -75,12 +75,24 @@ const statusColor = (status: string) => {
   }
 };
 
+// Recent activity logs for super admin
+const recentLogs = [
+  { id: 1, action: "Booking confirmed", actor: "Alice Martin (Guest)", target: "BK-001 · Grand Hotel Paris", time: "2 min ago", icon: CalendarCheck, color: "text-accent" },
+  { id: 2, action: "Room status updated", actor: "Marie Dupont (Housekeeping)", target: "Room 304 → Clean", time: "8 min ago", icon: Activity, color: "text-blue-500" },
+  { id: 3, action: "Rate changed", actor: "Jean Moreau (Revenue Mgr)", target: "Deluxe Suite +15%", time: "15 min ago", icon: DollarSign, color: "text-emerald-500" },
+  { id: 4, action: "New team member added", actor: "Admin", target: "Sophie Laurent (Receptionist)", time: "32 min ago", icon: UserPlus, color: "text-purple-500" },
+  { id: 5, action: "Maintenance ticket closed", actor: "Paul Renard (Maintenance)", target: "Ticket #MT-042 resolved", time: "1h ago", icon: Settings, color: "text-muted-foreground" },
+  { id: 6, action: "Guest checked in", actor: "Front Desk", target: "Robert Chen · Room 512", time: "1h 20min ago", icon: User, color: "text-cyan-500" },
+  { id: 7, action: "Property settings updated", actor: "Admin", target: "Seaside Resort – WiFi policy", time: "2h ago", icon: Building2, color: "text-amber-500" },
+  { id: 8, action: "Security incident reported", actor: "Marc Bernard (Security)", target: "Lobby – unauthorized access attempt", time: "3h ago", icon: Shield, color: "text-red-500" },
+];
+
 interface PartnerOverviewProps {
   onNavigate: (tab: string) => void;
 }
 
 const PartnerOverview = ({ onNavigate }: PartnerOverviewProps) => {
-  const [calendarMonth] = useState(2); // March (0-indexed)
+  const [calendarMonth] = useState(2);
   const currentYear = 2026;
   const daysInMonth = new Date(currentYear, calendarMonth + 1, 0).getDate();
   const firstDay = new Date(currentYear, calendarMonth, 1).getDay();
@@ -149,14 +161,7 @@ const PartnerOverview = ({ onNavigate }: PartnerOverviewProps) => {
               <XAxis dataKey="month" tick={{ fill: "hsl(220 10% 50%)", fontSize: 12 }} />
               <YAxis yAxisId="left" tick={{ fill: "hsl(220 10% 50%)", fontSize: 12 }} />
               <YAxis yAxisId="right" orientation="right" tick={{ fill: "hsl(220 10% 50%)", fontSize: 12 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "hsl(0 0% 100%)",
-                  border: "1px solid hsl(220 15% 90%)",
-                  borderRadius: "12px",
-                  fontSize: 12,
-                }}
-              />
+              <Tooltip contentStyle={{ backgroundColor: "hsl(0 0% 100%)", border: "1px solid hsl(220 15% 90%)", borderRadius: "12px", fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Bar yAxisId="left" dataKey="revenue" fill="hsl(38 90% 55%)" radius={[6, 6, 0, 0]} name="Revenue ($)" />
               <Bar yAxisId="right" dataKey="bookings" fill="hsl(220 45% 20%)" radius={[6, 6, 0, 0]} name="Bookings" />
@@ -186,6 +191,37 @@ const PartnerOverview = ({ onNavigate }: PartnerOverviewProps) => {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Recent Activity Logs (Super Admin) */}
+      <div className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-border/60">
+          <h2 className="font-display font-bold text-foreground text-lg flex items-center gap-2">
+            <Activity size={18} className="text-accent" /> Recent Activity
+          </h2>
+          <Button variant="ghost" size="sm" className="text-accent gap-1 hover:bg-accent/10 rounded-lg" onClick={() => onNavigate("reports")}>
+            View All Logs <ArrowUpRight size={14} />
+          </Button>
+        </div>
+        <div className="divide-y divide-border/40">
+          {recentLogs.slice(0, 5).map(log => {
+            const Icon = log.icon;
+            return (
+              <div key={log.id} className="flex items-center gap-3 px-5 py-3.5 hover:bg-muted/30 transition-colors">
+                <div className={`w-8 h-8 rounded-lg bg-muted/60 flex items-center justify-center shrink-0 ${log.color}`}>
+                  <Icon size={14} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">{log.action}</p>
+                  <p className="text-xs text-muted-foreground truncate">{log.actor} · {log.target}</p>
+                </div>
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap flex items-center gap-1">
+                  <Clock size={10} /> {log.time}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
