@@ -23,6 +23,7 @@ import PartnerProgram from "./pages/PartnerProgram";
 import PartnerRegister from "./pages/PartnerRegister";
 import PartnerDashboard from "./pages/PartnerDashboard";
 import NotFound from "./pages/NotFound";
+import GuestServices from "./pages/GuestServices";
 import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();

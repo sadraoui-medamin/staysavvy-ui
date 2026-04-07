@@ -3,12 +3,23 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/AuthModal";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose,
+} from "@/components/ui/drawer";
+
+const navLinks = [
+  { to: "/", label: "Home" },
+  { to: "/search", label: "Explore" },
+  { to: "/dashboard", label: "My Trips" },
+];
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const isMobile = useIsMobile();
 
   return (
     <>
@@ -22,9 +33,9 @@ export function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-8">
-            <Link to="/" className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors">Home</Link>
-            <Link to="/search" className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors">Explore</Link>
-            <Link to="/dashboard" className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors">My Trips</Link>
+            {navLinks.map((l) => (
+              <Link key={l.to} to={l.to} className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors">{l.label}</Link>
+            ))}
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -37,25 +48,51 @@ export function Navbar() {
           </div>
 
           {/* Mobile toggle */}
-          <button className="md:hidden text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          <button className="md:hidden text-primary-foreground" onClick={() => setMobileOpen(true)}>
+            <Menu size={24} />
           </button>
         </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="md:hidden bg-primary border-t border-primary-foreground/10 animate-fade-in">
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-3">
-              <Link to="/" className="text-primary-foreground py-2" onClick={() => setMobileOpen(false)}>Home</Link>
-              <Link to="/search" className="text-primary-foreground py-2" onClick={() => setMobileOpen(false)}>Explore</Link>
-              <Link to="/dashboard" className="text-primary-foreground py-2" onClick={() => setMobileOpen(false)}>My Trips</Link>
-              <hr className="border-primary-foreground/10" />
-              <Button variant="ghost" className="text-primary-foreground justify-start hover:bg-primary-foreground/10" onClick={() => { setAuthModal("login"); setMobileOpen(false); }}>Log In</Button>
-              <Button className="bg-accent text-accent-foreground hover:bg-gold-light" onClick={() => { setAuthModal("signup"); setMobileOpen(false); }}>Sign Up</Button>
-            </div>
-          </div>
-        )}
       </nav>
+
+      {/* Mobile Drawer */}
+      <Drawer open={mobileOpen} onOpenChange={setMobileOpen} direction="right">
+        <DrawerContent className="h-full w-[280px] ml-auto rounded-none rounded-l-2xl fixed right-0 top-0 bottom-0 inset-x-auto">
+          <DrawerHeader className="flex items-center justify-between border-b border-border/50 px-5 py-4">
+            <DrawerTitle className="font-display text-lg font-bold">
+              Stay<span className="text-gradient-gold">Vista</span>
+            </DrawerTitle>
+            <DrawerClose asChild>
+              <button className="text-muted-foreground hover:text-foreground">
+                <X size={20} />
+              </button>
+            </DrawerClose>
+          </DrawerHeader>
+          <div className="flex flex-col gap-1 px-4 py-4">
+            {navLinks.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
+                  location.pathname === l.to
+                    ? "bg-accent/10 text-accent"
+                    : "text-foreground hover:bg-muted/60"
+                }`}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
+          <div className="mt-auto border-t border-border/50 p-4 flex flex-col gap-2">
+            <Button variant="outline" className="w-full justify-center" onClick={() => { setAuthModal("login"); setMobileOpen(false); }}>
+              Log In
+            </Button>
+            <Button className="w-full justify-center bg-accent text-accent-foreground hover:bg-gold-light" onClick={() => { setAuthModal("signup"); setMobileOpen(false); }}>
+              Sign Up
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       <AuthModal mode={authModal} onClose={() => setAuthModal(null)} onSwitch={(m) => setAuthModal(m)} />
     </>
