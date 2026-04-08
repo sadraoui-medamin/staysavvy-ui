@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AuthModal } from "@/components/AuthModal";
-import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose,
-} from "@/components/ui/drawer";
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
+} from "@/components/ui/sheet";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -20,7 +19,6 @@ export function Navbar() {
   const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
   const location = useLocation();
   const isHome = location.pathname === "/";
-  const isMobile = useIsMobile();
 
   return (
     <>
@@ -55,20 +53,20 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile Drawer */}
-      <Drawer open={mobileOpen} onOpenChange={setMobileOpen} direction="right">
-        <DrawerContent className="h-full w-[280px] ml-auto rounded-none rounded-l-2xl fixed right-0 top-0 bottom-0 inset-x-auto">
-          <DrawerHeader className="flex items-center justify-between border-b border-border/50 px-5 py-4">
-            <DrawerTitle className="font-display text-lg font-bold">
+      {/* Mobile Sheet */}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="right" className="w-[280px] p-0 flex flex-col [&>button]:hidden">
+          <SheetHeader className="flex flex-row items-center justify-between border-b border-border/50 px-5 py-4">
+            <SheetTitle className="font-display text-lg font-bold">
               Stay<span className="text-gradient-gold">Vista</span>
-            </DrawerTitle>
-            <DrawerClose asChild>
+            </SheetTitle>
+            <SheetClose asChild>
               <button className="text-muted-foreground hover:text-foreground">
                 <X size={20} />
               </button>
-            </DrawerClose>
-          </DrawerHeader>
-          <div className="flex flex-col gap-1 px-4 py-4">
+            </SheetClose>
+          </SheetHeader>
+          <div className="flex flex-col gap-1 px-4 py-4 flex-1">
             {navLinks.map((l) => (
               <Link
                 key={l.to}
@@ -84,7 +82,7 @@ export function Navbar() {
               </Link>
             ))}
           </div>
-          <div className="mt-auto border-t border-border/50 p-4 flex flex-col gap-2">
+          <div className="border-t border-border/50 p-4 flex flex-col gap-2">
             <Button variant="outline" className="w-full justify-center" onClick={() => { setAuthModal("login"); setMobileOpen(false); }}>
               Log In
             </Button>
@@ -92,8 +90,8 @@ export function Navbar() {
               Sign Up
             </Button>
           </div>
-        </DrawerContent>
-      </Drawer>
+        </SheetContent>
+      </Sheet>
 
       <AuthModal mode={authModal} onClose={() => setAuthModal(null)} onSwitch={(m) => setAuthModal(m)} />
     </>

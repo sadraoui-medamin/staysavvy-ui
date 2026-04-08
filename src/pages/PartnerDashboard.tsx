@@ -5,7 +5,7 @@ import {
   LayoutDashboard, CalendarCheck, Building2, BarChart3, Users,
   Settings, User, LogOut, ChevronDown, Moon, Sun,
   DollarSign, DoorOpen, Heart, Bed, Sparkles, Wrench,
-  UtensilsCrossed, Receipt, Shield, UserCog,
+  UtensilsCrossed, Receipt, Shield, UserCog, Menu, X,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose,
+} from "@/components/ui/sheet";
 import { ROLES, ALL_ROLES, type RoleKey } from "@/lib/roles";
 
 import PartnerOverview from "@/components/partner/PartnerOverview";
@@ -58,6 +61,7 @@ const PartnerDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [roleDialog, setRoleDialog] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const role = ROLES[currentRole];
   const navItems = role.navItems.map((key) => ({ key, label: labelMap[key] || key, icon: iconMap[key] || LayoutDashboard }));
@@ -102,6 +106,10 @@ const PartnerDashboard = () => {
       <header className="sticky top-0 z-50 border-b border-border/60 bg-card/80 backdrop-blur-xl">
         <div className="flex items-center justify-between px-4 lg:px-8 h-16">
           <div className="flex items-center gap-3">
+            {/* Mobile hamburger */}
+            <button className="lg:hidden text-muted-foreground hover:text-foreground" onClick={() => setMobileNavOpen(true)}>
+              <Menu size={22} />
+            </button>
             <button onClick={() => navigate("/")} className="font-display text-xl font-bold tracking-tight text-foreground">
               Stay<span className="text-gradient-gold">Vista</span>
             </button>
@@ -168,23 +176,76 @@ const PartnerDashboard = () => {
             </DropdownMenu>
           </div>
         </div>
-
-        {/* Mobile nav */}
-        <div className="lg:hidden flex overflow-x-auto px-4 pb-2.5 gap-1">
-          {navItems.map((item) => (
-            <button
-              key={item.key}
-              onClick={() => setActiveTab(item.key)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all duration-200 ${
-                activeTab === item.key ? "bg-foreground text-background shadow-sm" : "text-muted-foreground hover:bg-muted/60"
-              }`}
-            >
-              <item.icon size={14} />
-              {item.label}
-            </button>
-          ))}
-        </div>
       </header>
+
+      {/* Mobile Navigation Drawer */}
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent side="left" className="w-[280px] p-0 flex flex-col [&>button]:hidden">
+          <SheetHeader className="flex flex-row items-center justify-between border-b border-border/50 px-5 py-4">
+            <SheetTitle className="font-display text-lg font-bold">
+              Stay<span className="text-gradient-gold">Vista</span>
+            </SheetTitle>
+            <SheetClose asChild>
+              <button className="text-muted-foreground hover:text-foreground">
+                <X size={20} />
+              </button>
+            </SheetClose>
+          </SheetHeader>
+
+          {/* Role indicator */}
+          <div className="px-4 py-3 border-b border-border/30">
+            <button
+              onClick={() => { setRoleDialog(true); setMobileNavOpen(false); }}
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors"
+            >
+              <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${role.color} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
+                {role.initials}
+              </div>
+              <div className="text-left min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground truncate">{role.shortLabel}</p>
+                <p className="text-xs text-muted-foreground">Switch role</p>
+              </div>
+              <ChevronDown size={14} className="text-muted-foreground" />
+            </button>
+          </div>
+
+          {/* Nav items */}
+          <div className="flex flex-col gap-0.5 px-3 py-3 flex-1 overflow-y-auto">
+            {navItems.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => { setActiveTab(item.key); setMobileNavOpen(false); }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors text-left ${
+                  activeTab === item.key
+                    ? "bg-accent/10 text-accent"
+                    : "text-foreground hover:bg-muted/60"
+                }`}
+              >
+                <item.icon size={18} />
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Bottom actions */}
+          <div className="border-t border-border/50 p-4 flex flex-col gap-2">
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2"
+              onClick={() => { setActiveTab("profile"); setMobileNavOpen(false); }}
+            >
+              <User size={16} /> Profile
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+              onClick={() => navigate("/")}
+            >
+              <LogOut size={16} /> Log Out
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Main Content */}
       <main className="flex-1 p-4 lg:p-8 max-w-[1400px] mx-auto w-full">
