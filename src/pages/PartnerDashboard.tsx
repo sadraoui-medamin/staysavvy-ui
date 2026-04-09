@@ -264,7 +264,7 @@ const PartnerDashboard = () => {
 
       {/* Role Switcher Dialog */}
       <Dialog open={roleDialog} onOpenChange={setRoleDialog}>
-        <DialogContent className="rounded-2xl max-w-2xl">
+        <DialogContent className="rounded-2xl max-w-2xl mx-2 sm:mx-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><UserCog size={20} /> Switch Role</DialogTitle>
           </DialogHeader>
@@ -273,13 +273,13 @@ const PartnerDashboard = () => {
               <button
                 key={r.key}
                 onClick={() => switchRole(r.key)}
-                className={`flex items-start gap-3 p-4 rounded-xl border transition-all text-left ${
+                className={`flex items-start gap-3 p-3 sm:p-4 rounded-xl border transition-all text-left ${
                   currentRole === r.key
                     ? "border-primary bg-primary/5 ring-2 ring-primary/20"
                     : "border-border/50 hover:border-border hover:bg-muted/40"
                 }`}
               >
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${r.color} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${r.color} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
                   {r.initials}
                 </div>
                 <div className="min-w-0">
