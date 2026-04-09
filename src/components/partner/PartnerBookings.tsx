@@ -4,11 +4,15 @@ import { Input } from "@/components/ui/input";
 import {
   Search, Download, CalendarCheck, DollarSign, Clock, CheckCircle,
   XCircle, MapPin, Calendar, Eye, User, Phone, Mail,
-  Check, X, LogIn, LogOut, MessageSquare,
+  Check, X, LogIn, LogOut, MessageSquare, Filter, SortAsc,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -135,30 +139,25 @@ const PartnerBookings = () => {
     toast({ title: "PDF Exported", description: "Bookings report downloaded." });
   };
 
-  // Automatic status engine: updates statuses based on dates
   useEffect(() => {
     const now = new Date();
     const today = now.toISOString().split("T")[0];
     setBookings(prev => prev.map(b => {
-      // Auto-confirm pending bookings (simulate availability check passed)
       if (b.status === "Pending" && b.checkIn > today) {
         return { ...b, status: "Confirmed" as const, notes: [...b.notes, `[${now.toLocaleString()}] Auto-confirmed: availability verified`] };
       }
-      // Auto check-in on check-in date
       if (b.status === "Confirmed" && b.checkIn <= today && b.checkOut > today) {
         return { ...b, status: "CheckedIn" as const, notes: [...b.notes, `[${now.toLocaleString()}] Auto checked-in on arrival date`] };
       }
-      // Auto check-out on check-out date
       if (b.status === "CheckedIn" && b.checkOut <= today) {
         return { ...b, status: "CheckedOut" as const, notes: [...b.notes, `[${now.toLocaleString()}] Auto checked-out on departure date`] };
       }
-      // Auto complete after checkout
       if (b.status === "CheckedOut") {
         return { ...b, status: "Completed" as const, notes: [...b.notes, `[${now.toLocaleString()}] Auto-completed after checkout`] };
       }
       return b;
     }));
-  }, []); // runs once on mount
+  }, []);
 
   const getStatusInfo = (b: PartnerBooking) => {
     const now = new Date();
@@ -170,9 +169,7 @@ const PartnerBookings = () => {
   };
 
   const getActions = (b: PartnerBooking) => {
-    // All status transitions are automatic; only manual override for viewing
     const actions: { label: string; icon: typeof Check; onClick: () => void; variant: string }[] = [];
-    // Allow manual reject for pending (edge case where system hasn't auto-confirmed yet)
     if (b.status === "Pending") {
       actions.push({ label: "Reject", icon: X, onClick: () => setRejectConfirm(b), variant: "text-destructive" });
     }
@@ -180,103 +177,175 @@ const PartnerBookings = () => {
   };
 
   const statCards = [
-    { label: "Total Bookings", value: stats.total, icon: CalendarCheck, color: "text-primary" },
+    { label: "Total", value: stats.total, icon: CalendarCheck, color: "text-primary" },
     { label: "Confirmed", value: stats.confirmed, icon: CheckCircle, color: "text-accent" },
     { label: "Pending", value: stats.pending, icon: Clock, color: "text-yellow-600" },
     { label: "Checked In", value: stats.checkedIn, icon: LogIn, color: "text-blue-600" },
     { label: "Revenue", value: `$${stats.revenue.toLocaleString()}`, icon: DollarSign, color: "text-accent" },
   ];
 
+  const activeFilterCount = (statusFilter !== "All" ? 1 : 0) + (sort !== "date-desc" ? 1 : 0);
+
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Bookings</h1>
-          <p className="text-muted-foreground text-sm">Manage reservations: accept, check-in, and track guests</p>
+    <div className="space-y-4 sm:space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-3xl font-display font-bold text-foreground truncate">Bookings</h1>
+          <p className="text-muted-foreground text-xs sm:text-sm hidden sm:block">Manage reservations and track guests</p>
         </div>
-        <Button variant="outline" onClick={exportPDF} className="gap-2 rounded-xl">
-          <Download size={16} /> Export PDF
+        <Button variant="outline" size="sm" onClick={exportPDF} className="gap-1.5 rounded-xl shrink-0 text-xs sm:text-sm">
+          <Download size={14} /> <span className="hidden sm:inline">Export</span> PDF
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Stats - scrollable on mobile */}
+      <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 sm:grid sm:grid-cols-5 sm:gap-3 sm:mx-0 sm:px-0">
         {statCards.map(s => (
-          <div key={s.label} className="bg-card rounded-2xl border border-border/50 p-5 flex items-center gap-4 hover:shadow-card-hover transition-all">
-            <div className={`w-11 h-11 rounded-xl bg-muted flex items-center justify-center ${s.color}`}>
-              <s.icon size={20} />
+          <div key={s.label} className="flex-shrink-0 w-[130px] sm:w-auto bg-card rounded-xl border border-border/50 p-3 sm:p-4 flex items-center gap-3 hover:shadow-card-hover transition-all">
+            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-muted flex items-center justify-center ${s.color}`}>
+              <s.icon size={16} className="sm:hidden" />
+              <s.icon size={18} className="hidden sm:block" />
             </div>
-            <div>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold text-foreground">{s.value}</p>
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{s.label}</p>
+              <p className="text-base sm:text-lg font-bold text-foreground">{s.value}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-col gap-3">
-        <div className="relative">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search by guest, hotel, or ID..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-10 bg-card rounded-xl" />
+      {/* Search + Filter/Sort */}
+      <div className="flex gap-2 items-center">
+        <div className="relative flex-1 min-w-0">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search guest, hotel, ID..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-8 h-9 sm:h-10 bg-card rounded-xl text-sm"
+          />
         </div>
-        <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
-          {statusFilters.map(s => (
-            <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 ${statusFilter === s ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}>
-              {s === "CheckedIn" ? "Checked In" : s === "CheckedOut" ? "Checked Out" : s}
-            </button>
-          ))}
-        </div>
-        <select value={sort} onChange={e => setSort(e.target.value)} className="h-10 px-3 rounded-xl border border-border bg-card text-foreground text-sm w-full sm:w-auto">
-          {sortOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="rounded-xl gap-1.5 h-9 sm:h-10 px-3 shrink-0 relative">
+              <Filter size={14} />
+              <span className="hidden sm:inline text-sm">Filter</span>
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-accent text-accent-foreground text-[10px] flex items-center justify-center font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 rounded-xl">
+            <DropdownMenuLabel className="text-xs text-muted-foreground">Status</DropdownMenuLabel>
+            {statusFilters.map(s => (
+              <DropdownMenuItem
+                key={s}
+                onClick={() => setStatusFilter(s)}
+                className={`text-sm rounded-lg cursor-pointer ${statusFilter === s ? "bg-accent/10 text-accent font-medium" : ""}`}
+              >
+                {statusFilter === s && <Check size={14} className="mr-2 shrink-0" />}
+                <span className={statusFilter !== s ? "pl-[22px]" : ""}>{s === "CheckedIn" ? "Checked In" : s === "CheckedOut" ? "Checked Out" : s}</span>
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground flex items-center gap-1"><SortAsc size={12} /> Sort By</DropdownMenuLabel>
+            {sortOptions.map(o => (
+              <DropdownMenuItem
+                key={o.value}
+                onClick={() => setSort(o.value)}
+                className={`text-sm rounded-lg cursor-pointer ${sort === o.value ? "bg-accent/10 text-accent font-medium" : ""}`}
+              >
+                {sort === o.value && <Check size={14} className="mr-2 shrink-0" />}
+                <span className={sort !== o.value ? "pl-[22px]" : ""}>{o.label}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
-      {/* Cards */}
-      <div className="space-y-4">
+      {/* Active filter chips */}
+      {(statusFilter !== "All" || sort !== "date-desc") && (
+        <div className="flex flex-wrap gap-1.5">
+          {statusFilter !== "All" && (
+            <button
+              onClick={() => setStatusFilter("All")}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent/10 text-accent text-xs font-medium hover:bg-accent/20 transition-colors"
+            >
+              {statusLabel(statusFilter)} <X size={12} />
+            </button>
+          )}
+          {sort !== "date-desc" && (
+            <button
+              onClick={() => setSort("date-desc")}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-muted text-muted-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
+            >
+              {sortOptions.find(o => o.value === sort)?.label} <X size={12} />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Booking Cards */}
+      <div className="space-y-3">
         {filtered.length === 0 ? (
-          <div className="text-center py-16 bg-card rounded-2xl border border-border/50">
-            <CalendarCheck size={40} className="mx-auto text-muted-foreground mb-3" />
-            <h3 className="text-lg font-semibold text-foreground mb-1">No bookings found</h3>
-            <p className="text-muted-foreground text-sm">Try adjusting your search or filters</p>
+          <div className="text-center py-12 sm:py-16 bg-card rounded-xl border border-border/50">
+            <CalendarCheck size={32} className="mx-auto text-muted-foreground mb-2" />
+            <h3 className="text-base font-semibold text-foreground mb-1">No bookings found</h3>
+            <p className="text-muted-foreground text-xs sm:text-sm">Try adjusting your search or filters</p>
           </div>
         ) : (
           filtered.map(b => {
             const actions = getActions(b);
+            const info = getStatusInfo(b);
             return (
-              <div key={b.id} className="bg-card rounded-2xl border border-border/50 p-5 hover:shadow-card-hover hover:border-accent/20 transition-all duration-300">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="font-mono text-xs text-muted-foreground">{b.id}</span>
-                      <span className={`px-2.5 py-0.5 rounded-md text-xs font-medium ${statusColor(b.status)}`}>{statusLabel(b.status)}</span>
-                      <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-0.5 rounded">{b.roomType}</span>
-                    </div>
-                    <h3 className="font-semibold text-foreground text-base">{b.guest}</h3>
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mt-1">
-                      <span className="flex items-center gap-1"><MapPin size={13} /> {b.hotel}</span>
-                      <span className="flex items-center gap-1"><Calendar size={13} /> {b.checkIn} → {b.checkOut}</span>
-                      <span>{b.guests} guests · {b.rooms} room{b.rooms > 1 ? "s" : ""}</span>
-                    </div>
-                    {getStatusInfo(b) && (
-                      <p className="text-xs text-accent mt-1 flex items-center gap-1"><Clock size={12} /> {getStatusInfo(b)}</p>
-                    )}
+              <div key={b.id} className="bg-card rounded-xl border border-border/50 p-3 sm:p-4 hover:shadow-card-hover hover:border-accent/20 transition-all duration-200">
+                {/* Top row: ID + status + amount */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                    <span className="font-mono text-[11px] text-muted-foreground">{b.id}</span>
+                    <span className={`px-2 py-0.5 rounded-md text-[11px] font-medium ${statusColor(b.status)}`}>
+                      {statusLabel(b.status)}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <p className="text-xl font-bold text-foreground">${b.amount}</p>
-                      <p className="text-xs text-muted-foreground">total</p>
-                    </div>
-                    <div className="flex gap-1.5">
-                      {actions.map(a => (
-                        <Button key={a.label} size="sm" variant="outline" className={`rounded-lg gap-1 ${a.variant}`} onClick={a.onClick}>
-                          <a.icon size={14} /> {a.label}
-                        </Button>
-                      ))}
-                      <Button size="sm" variant="outline" className="rounded-lg gap-1.5" onClick={() => { setViewBooking(b); setNoteText(""); }}>
-                        <Eye size={14} /> View
+                  <span className="text-base sm:text-lg font-bold text-foreground shrink-0">${b.amount}</span>
+                </div>
+
+                {/* Guest name + room type */}
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{b.guest}</h3>
+                  <span className="text-[11px] text-muted-foreground bg-muted/50 px-2 py-0.5 rounded shrink-0">{b.roomType}</span>
+                </div>
+
+                {/* Details */}
+                <div className="flex flex-col gap-1 text-xs text-muted-foreground mb-2">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <MapPin size={11} className="shrink-0" /> <span className="truncate">{b.hotel}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Calendar size={11} className="shrink-0" />
+                    <span>{b.checkIn} → {b.checkOut}</span>
+                    <span className="text-muted-foreground/60">·</span>
+                    <span>{b.guests}g · {b.rooms}r</span>
+                  </div>
+                </div>
+
+                {/* Status info + actions */}
+                <div className="flex items-center justify-between gap-2">
+                  {info ? (
+                    <p className="text-[11px] text-accent flex items-center gap-1"><Clock size={11} /> {info}</p>
+                  ) : <span />}
+                  <div className="flex gap-1.5 shrink-0">
+                    {actions.map(a => (
+                      <Button key={a.label} size="sm" variant="outline" className={`rounded-lg gap-1 h-7 px-2 text-xs ${a.variant}`} onClick={a.onClick}>
+                        <a.icon size={12} /> {a.label}
                       </Button>
-                    </div>
+                    ))}
+                    <Button size="sm" variant="outline" className="rounded-lg gap-1 h-7 px-2 text-xs" onClick={() => { setViewBooking(b); setNoteText(""); }}>
+                      <Eye size={12} /> View
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -287,73 +356,69 @@ const PartnerBookings = () => {
 
       {/* View Booking Dialog */}
       <Dialog open={!!viewBooking} onOpenChange={() => setViewBooking(null)}>
-        <DialogContent className="rounded-2xl max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="rounded-xl max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-display">Booking Details — {viewBooking?.id}</DialogTitle>
+            <DialogTitle className="font-display text-base sm:text-lg">Booking {viewBooking?.id}</DialogTitle>
           </DialogHeader>
           {viewBooking && (
-            <div className="space-y-5 text-sm">
-              {/* Status & Actions */}
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className={`px-3 py-1.5 rounded-lg text-sm font-medium ${statusColor(viewBooking.status)}`}>{statusLabel(viewBooking.status)}</span>
+            <div className="space-y-4 text-sm">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`px-2.5 py-1 rounded-lg text-xs font-medium ${statusColor(viewBooking.status)}`}>{statusLabel(viewBooking.status)}</span>
                 {getActions(viewBooking).map(a => (
-                  <Button key={a.label} size="sm" variant="outline" className={`rounded-lg gap-1.5 ${a.variant}`} onClick={a.onClick}>
-                    <a.icon size={14} /> {a.label}
+                  <Button key={a.label} size="sm" variant="outline" className={`rounded-lg gap-1 h-7 text-xs ${a.variant}`} onClick={a.onClick}>
+                    <a.icon size={12} /> {a.label}
                   </Button>
                 ))}
               </div>
 
-              {/* Guest Info */}
-              <div className="bg-muted/30 rounded-xl p-4">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Guest Information</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="flex items-center gap-2"><User size={14} className="text-muted-foreground" /><span className="font-medium text-foreground">{viewBooking.guest}</span></div>
-                  <div className="flex items-center gap-2"><Mail size={14} className="text-muted-foreground" /><span className="text-foreground">{viewBooking.guestEmail}</span></div>
-                  <div className="flex items-center gap-2"><Phone size={14} className="text-muted-foreground" /><span className="text-foreground">{viewBooking.guestPhone}</span></div>
+              <div className="bg-muted/30 rounded-xl p-3 sm:p-4">
+                <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Guest</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2"><User size={13} className="text-muted-foreground shrink-0" /><span className="font-medium text-foreground truncate">{viewBooking.guest}</span></div>
+                  <div className="flex items-center gap-2"><Mail size={13} className="text-muted-foreground shrink-0" /><span className="text-foreground truncate">{viewBooking.guestEmail}</span></div>
+                  <div className="flex items-center gap-2"><Phone size={13} className="text-muted-foreground shrink-0" /><span className="text-foreground">{viewBooking.guestPhone}</span></div>
                 </div>
               </div>
 
-              {/* Booking Details */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div><p className="text-muted-foreground text-xs mb-1">Hotel</p><p className="font-medium text-foreground">{viewBooking.hotel}</p></div>
-                <div><p className="text-muted-foreground text-xs mb-1">Room Type</p><p className="font-medium text-foreground">{viewBooking.roomType}</p></div>
-                <div><p className="text-muted-foreground text-xs mb-1">Check-in</p><p className="font-medium text-foreground">{viewBooking.checkIn}</p></div>
-                <div><p className="text-muted-foreground text-xs mb-1">Check-out</p><p className="font-medium text-foreground">{viewBooking.checkOut}</p></div>
-                <div><p className="text-muted-foreground text-xs mb-1">Guests / Rooms</p><p className="font-medium text-foreground">{viewBooking.guests} guests · {viewBooking.rooms} room{viewBooking.rooms > 1 ? "s" : ""}</p></div>
-                <div><p className="text-muted-foreground text-xs mb-1">Payment</p><p className="font-medium text-foreground">{viewBooking.paymentMethod}</p></div>
-                <div><p className="text-muted-foreground text-xs mb-1">Amount</p><p className="text-2xl font-bold text-foreground">${viewBooking.amount}</p></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div><p className="text-muted-foreground text-[11px] mb-0.5">Hotel</p><p className="font-medium text-foreground text-xs sm:text-sm">{viewBooking.hotel}</p></div>
+                <div><p className="text-muted-foreground text-[11px] mb-0.5">Room</p><p className="font-medium text-foreground text-xs sm:text-sm">{viewBooking.roomType}</p></div>
+                <div><p className="text-muted-foreground text-[11px] mb-0.5">Check-in</p><p className="font-medium text-foreground text-xs sm:text-sm">{viewBooking.checkIn}</p></div>
+                <div><p className="text-muted-foreground text-[11px] mb-0.5">Check-out</p><p className="font-medium text-foreground text-xs sm:text-sm">{viewBooking.checkOut}</p></div>
+                <div><p className="text-muted-foreground text-[11px] mb-0.5">Guests / Rooms</p><p className="font-medium text-foreground text-xs sm:text-sm">{viewBooking.guests} guests · {viewBooking.rooms} room{viewBooking.rooms > 1 ? "s" : ""}</p></div>
+                <div><p className="text-muted-foreground text-[11px] mb-0.5">Payment</p><p className="font-medium text-foreground text-xs sm:text-sm">{viewBooking.paymentMethod}</p></div>
+                <div className="col-span-2"><p className="text-muted-foreground text-[11px] mb-0.5">Total Amount</p><p className="text-xl font-bold text-foreground">${viewBooking.amount}</p></div>
               </div>
 
               {viewBooking.specialRequests && (
-                <div className="bg-accent/5 border border-accent/20 rounded-xl p-4">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Special Requests</h3>
-                  <p className="text-foreground">{viewBooking.specialRequests}</p>
+                <div className="bg-accent/5 border border-accent/20 rounded-xl p-3">
+                  <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Special Requests</h3>
+                  <p className="text-foreground text-xs sm:text-sm">{viewBooking.specialRequests}</p>
                 </div>
               )}
 
-              {/* Notes / Communication Log */}
-              <div className="border border-border/50 rounded-xl p-4">
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                  <MessageSquare size={14} /> Notes & Activity
+              <div className="border border-border/50 rounded-xl p-3">
+                <h3 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <MessageSquare size={12} /> Notes
                 </h3>
                 {viewBooking.notes.length > 0 ? (
-                  <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
+                  <div className="space-y-1.5 mb-2.5 max-h-32 overflow-y-auto">
                     {viewBooking.notes.map((n, i) => (
-                      <div key={i} className="text-xs bg-muted/40 rounded-lg px-3 py-2 text-foreground">{n}</div>
+                      <div key={i} className="text-[11px] bg-muted/40 rounded-lg px-2.5 py-1.5 text-foreground">{n}</div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-muted-foreground mb-3">No notes yet.</p>
+                  <p className="text-[11px] text-muted-foreground mb-2.5">No notes yet.</p>
                 )}
                 <div className="flex gap-2">
                   <Input
                     value={noteText}
                     onChange={e => setNoteText(e.target.value)}
                     placeholder="Add a note..."
-                    className="h-9 text-sm bg-muted/30 rounded-lg flex-1"
+                    className="h-8 text-xs bg-muted/30 rounded-lg flex-1"
                     onKeyDown={e => e.key === "Enter" && addNote(viewBooking.id)}
                   />
-                  <Button size="sm" onClick={() => addNote(viewBooking.id)} className="rounded-lg bg-accent text-accent-foreground hover:bg-gold-light">Add</Button>
+                  <Button size="sm" onClick={() => addNote(viewBooking.id)} className="rounded-lg bg-accent text-accent-foreground hover:bg-gold-light h-8 text-xs px-3">Add</Button>
                 </div>
               </div>
             </div>
@@ -363,17 +428,17 @@ const PartnerBookings = () => {
 
       {/* Reject Confirmation */}
       <Dialog open={!!rejectConfirm} onOpenChange={() => setRejectConfirm(null)}>
-        <DialogContent className="rounded-2xl max-w-md">
+        <DialogContent className="rounded-xl max-w-sm p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="font-display text-destructive flex items-center gap-2"><XCircle size={20} /> Reject Booking</DialogTitle>
+            <DialogTitle className="font-display text-destructive flex items-center gap-2 text-base"><XCircle size={18} /> Reject Booking</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to reject booking <strong className="text-foreground">{rejectConfirm?.id}</strong> from <strong className="text-foreground">{rejectConfirm?.guest}</strong>? The guest will be notified.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Reject booking <strong className="text-foreground">{rejectConfirm?.id}</strong> from <strong className="text-foreground">{rejectConfirm?.guest}</strong>?
           </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectConfirm(null)} className="rounded-lg">Cancel</Button>
-            <Button onClick={() => { if (rejectConfirm) { updateStatus(rejectConfirm.id, "Rejected"); setRejectConfirm(null); } }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg gap-1.5">
-              <X size={14} /> Reject
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => setRejectConfirm(null)} className="rounded-lg">Cancel</Button>
+            <Button size="sm" onClick={() => { if (rejectConfirm) { updateStatus(rejectConfirm.id, "Rejected"); setRejectConfirm(null); } }} className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-lg gap-1">
+              <X size={12} /> Reject
             </Button>
           </DialogFooter>
         </DialogContent>
