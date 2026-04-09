@@ -256,18 +256,18 @@ const PartnerReports = () => {
       </div>
 
       {/* Date Range Controls */}
-      <div className="bg-card rounded-2xl border border-border/50 p-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+      <div className="bg-card rounded-2xl border border-border/50 p-3 sm:p-4">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar size={16} />
             <span className="font-medium">Date Range:</span>
           </div>
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
             {datePresets.map(d => (
               <button
                 key={d.value}
                 onClick={() => { setDatePreset(d.value); setDateFrom(""); setDateTo(""); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 ${
                   datePreset === d.value && !dateFrom
                     ? "bg-foreground text-background"
                     : "bg-muted/50 text-muted-foreground hover:bg-muted"
@@ -277,38 +277,38 @@ const PartnerReports = () => {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2 sm:ml-auto">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Input
               type="date"
               value={dateFrom}
               onChange={e => { setDateFrom(e.target.value); setDatePreset(""); }}
-              className="h-8 text-xs bg-muted/30 rounded-lg w-36"
+              className="h-9 text-xs bg-muted/30 rounded-lg"
             />
-            <span className="text-xs text-muted-foreground">to</span>
+            <span className="text-xs text-muted-foreground text-center">to</span>
             <Input
               type="date"
               value={dateTo}
               onChange={e => { setDateTo(e.target.value); setDatePreset(""); }}
-              className="h-8 text-xs bg-muted/30 rounded-lg w-36"
+              className="h-9 text-xs bg-muted/30 rounded-lg"
             />
           </div>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 whitespace-nowrap shrink-0 ${
               activeTab === t.key
                 ? "bg-foreground text-background shadow-sm"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
           >
             <t.icon size={16} />
-            {t.label}
+            <span className="hidden sm:inline">{t.label}</span>
           </button>
         ))}
       </div>
