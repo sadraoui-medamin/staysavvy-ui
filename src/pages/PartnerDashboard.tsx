@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAutoHideHeader } from "@/hooks/useAutoHideHeader";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,6 +63,7 @@ const PartnerDashboard = () => {
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [roleDialog, setRoleDialog] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const headerVisible = useAutoHideHeader();
 
   const role = ROLES[currentRole];
   const navItems = role.navItems.map((key) => ({ key, label: labelMap[key] || key, icon: iconMap[key] || LayoutDashboard }));
@@ -103,7 +105,7 @@ const PartnerDashboard = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col transition-colors duration-300">
       {/* Top Navbar */}
-      <header className="sticky top-0 z-50 border-b border-border/60 bg-card/80 backdrop-blur-xl">
+      <header className={`sticky top-0 z-50 border-b border-border/60 bg-card/80 backdrop-blur-xl transition-transform duration-300 ${headerVisible ? "translate-y-0" : "-translate-y-full"}`}>
         <div className="flex items-center justify-between px-4 lg:px-8 h-16">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
@@ -136,24 +138,28 @@ const PartnerDashboard = () => {
             ))}
           </nav>
 
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="sm:hidden text-muted-foreground rounded-xl" onClick={() => setRoleDialog(true)}>
-              <UserCog size={18} />
+          <div className="flex items-center gap-0.5 sm:gap-1">
+            <Button variant="ghost" size="icon" className="sm:hidden text-muted-foreground rounded-xl h-9 w-9" onClick={() => setRoleDialog(true)}>
+              <UserCog size={16} />
             </Button>
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground rounded-xl" onClick={toggleTheme}>
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            <Button variant="ghost" size="icon" className="hidden sm:inline-flex text-muted-foreground hover:text-foreground rounded-xl h-9 w-9" onClick={toggleTheme}>
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </Button>
-            <PartnerNotifications currentRole={currentRole} />
-            <PartnerHelpDropdown onNavigateHelp={() => setActiveTab("help")} />
+            <div className="hidden sm:block">
+              <PartnerNotifications currentRole={currentRole} />
+            </div>
+            <div className="hidden sm:block">
+              <PartnerHelpDropdown onNavigateHelp={() => setActiveTab("help")} />
+            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2.5 ml-2 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-all duration-200 border border-transparent hover:border-border">
-                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${role.color} flex items-center justify-center text-white font-bold text-xs`}>{role.initials}</div>
+                <button className="flex items-center gap-1.5 sm:gap-2.5 ml-1 sm:ml-2 px-1.5 sm:px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-all duration-200 border border-transparent hover:border-border">
+                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br ${role.color} flex items-center justify-center text-white font-bold text-[10px] sm:text-xs`}>{role.initials}</div>
                   <div className="hidden md:block text-left">
                     <p className="text-sm font-semibold text-foreground leading-none">John Doe</p>
                     <p className="text-xs text-muted-foreground mt-0.5">{role.shortLabel}</p>
                   </div>
-                  <ChevronDown size={14} className="text-muted-foreground" />
+                  <ChevronDown size={12} className="text-muted-foreground hidden sm:block" />
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-60 rounded-xl p-1.5">
@@ -165,6 +171,10 @@ const PartnerDashboard = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                {/* Mobile-only items */}
+                <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5 sm:hidden" onClick={toggleTheme}>
+                  {isDark ? <Sun size={16} /> : <Moon size={16} />} {isDark ? "Light Mode" : "Dark Mode"}
+                </DropdownMenuItem>
                 <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5" onClick={() => setActiveTab("profile")}><User size={16} /> Profile</DropdownMenuItem>
                 {role.navItems.includes("settings") && (
                   <DropdownMenuItem className="gap-2.5 cursor-pointer rounded-lg py-2.5" onClick={() => setActiveTab("settings")}><Settings size={16} /> Account Settings</DropdownMenuItem>
@@ -254,7 +264,7 @@ const PartnerDashboard = () => {
 
       {/* Role Switcher Dialog */}
       <Dialog open={roleDialog} onOpenChange={setRoleDialog}>
-        <DialogContent className="rounded-2xl max-w-2xl">
+        <DialogContent className="rounded-2xl max-w-2xl mx-2 sm:mx-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><UserCog size={20} /> Switch Role</DialogTitle>
           </DialogHeader>
@@ -263,13 +273,13 @@ const PartnerDashboard = () => {
               <button
                 key={r.key}
                 onClick={() => switchRole(r.key)}
-                className={`flex items-start gap-3 p-4 rounded-xl border transition-all text-left ${
+                className={`flex items-start gap-3 p-3 sm:p-4 rounded-xl border transition-all text-left ${
                   currentRole === r.key
                     ? "border-primary bg-primary/5 ring-2 ring-primary/20"
                     : "border-border/50 hover:border-border hover:bg-muted/40"
                 }`}
               >
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${r.color} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
+                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${r.color} flex items-center justify-center text-white font-bold text-xs shrink-0`}>
                   {r.initials}
                 </div>
                 <div className="min-w-0">
