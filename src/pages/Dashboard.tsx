@@ -444,11 +444,11 @@ export default function Dashboard() {
             <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <CheckCircle size={20} className="text-green-500" /> Cancellation Complete
+                  <CheckCircle size={20} className="text-accent" /> Cancellation Complete
                 </DialogTitle>
                 <DialogDescription>Your reservation has been cancelled successfully.</DialogDescription>
               </DialogHeader>
-              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/50 rounded-lg p-4 space-y-2 text-sm">
+              <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2 text-sm">
                 {getRefundAmount(cancelTarget).amount > 0 ? (
                   <>
                     <p className="text-foreground font-medium">Refund of ${getRefundAmount(cancelTarget).amount} initiated</p>
