@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Calendar, MapPin, User, Settings, LogOut, Star, Search, SlidersHorizontal, ArrowUpDown, Eye, XCircle, Download, Hotel, DollarSign, CheckCircle, Clock } from "lucide-react";
+import { Calendar, MapPin, User, Settings, LogOut, Star, Search, SlidersHorizontal, ArrowUpDown, Eye, XCircle, Download, Hotel, DollarSign, CheckCircle, Clock, AlertTriangle, RotateCcw, CreditCard, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Navbar } from "@/components/Navbar";
@@ -7,6 +7,15 @@ import { Footer } from "@/components/Footer";
 import { myBookings, Booking } from "@/data/hotels";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -28,6 +37,8 @@ const sortOptions = [
   { label: "Price: Low to High", value: "price-asc" },
 ];
 
+type CancelStep = "confirm" | "reason" | "refund" | "done";
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("My Bookings");
   const [bookings, setBookings] = useState<Booking[]>(myBookings);
@@ -36,6 +47,15 @@ export default function Dashboard() {
   const [sort, setSort] = useState("date-desc");
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Cancel & Refund state
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
+  const [cancelStep, setCancelStep] = useState<CancelStep>("confirm");
+  const [cancelReason, setCancelReason] = useState("");
+  const [refundProcessing, setRefundProcessing] = useState(false);
+
+  const cancelTarget = bookings.find((b) => b.id === cancelBookingId);
 
   const stats = useMemo(() => {
     const total = bookings.length;
@@ -61,9 +81,55 @@ export default function Dashboard() {
     return result;
   }, [bookings, searchQuery, statusFilter, sort]);
 
-  const cancelBooking = (id: string) => {
-    setBookings((prev) => prev.map((b) => b.id === id ? { ...b, status: "cancelled" as const } : b));
-    toast({ title: "Booking Cancelled", description: "Your reservation has been cancelled successfully." });
+  // Cancellation policy logic
+  const getRefundAmount = (booking: Booking): { amount: number; percentage: number; policy: string } => {
+    const checkInDate = new Date(booking.checkIn);
+    const now = new Date();
+    const daysUntil = Math.ceil((checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (daysUntil > 14) return { amount: booking.total, percentage: 100, policy: "Full refund — cancelled more than 14 days before check-in" };
+    if (daysUntil > 7) return { amount: Math.round(booking.total * 0.75), percentage: 75, policy: "75% refund — cancelled 7-14 days before check-in" };
+    if (daysUntil > 2) return { amount: Math.round(booking.total * 0.5), percentage: 50, policy: "50% refund — cancelled 2-7 days before check-in" };
+    return { amount: 0, percentage: 0, policy: "No refund — cancelled less than 48 hours before check-in" };
+  };
+
+  const openCancelDialog = (id: string) => {
+    setCancelBookingId(id);
+    setCancelStep("confirm");
+    setCancelReason("");
+    setCancelDialogOpen(true);
+  };
+
+  const proceedToReason = () => setCancelStep("reason");
+  const proceedToRefund = () => setCancelStep("refund");
+
+  const processRefund = () => {
+    if (!cancelTarget) return;
+    setRefundProcessing(true);
+    const refund = getRefundAmount(cancelTarget);
+
+    setTimeout(() => {
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === cancelBookingId
+            ? {
+                ...b,
+                status: "cancelled" as const,
+                refundAmount: refund.amount,
+                refundStatus: refund.amount > 0 ? "pending" as const : "none" as const,
+                cancelledAt: new Date().toISOString(),
+              }
+            : b
+        )
+      );
+      setRefundProcessing(false);
+      setCancelStep("done");
+    }, 2000);
+  };
+
+  const closeCancelDialog = () => {
+    setCancelDialogOpen(false);
+    setCancelBookingId(null);
   };
 
   const exportPDF = () => {
@@ -73,23 +139,13 @@ export default function Dashboard() {
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text(`Generated on ${new Date().toLocaleDateString()}`, 14, 30);
-
     autoTable(doc, {
       startY: 38,
       head: [["Hotel", "Location", "Check-in", "Check-out", "Guests", "Status", "Total"]],
-      body: bookings.map((b) => [
-        b.hotelName,
-        b.location,
-        b.checkIn,
-        b.checkOut,
-        `${b.guests} guests, ${b.rooms} room`,
-        b.status.charAt(0).toUpperCase() + b.status.slice(1),
-        `$${b.total}`,
-      ]),
+      body: bookings.map((b) => [b.hotelName, b.location, b.checkIn, b.checkOut, `${b.guests} guests, ${b.rooms} room`, b.status.charAt(0).toUpperCase() + b.status.slice(1), `$${b.total}`]),
       theme: "striped",
       headStyles: { fillColor: [41, 37, 36] },
     });
-
     doc.save("booking-history.pdf");
     toast({ title: "PDF Exported", description: "Your booking history has been downloaded." });
   };
@@ -99,6 +155,15 @@ export default function Dashboard() {
     { label: "Upcoming Trips", value: stats.upcoming, icon: Clock, color: "text-accent" },
     { label: "Completed", value: stats.completed, icon: CheckCircle, color: "text-muted-foreground" },
     { label: "Total Spent", value: `$${stats.totalSpent.toLocaleString()}`, icon: DollarSign, color: "text-accent" },
+  ];
+
+  const cancelReasons = [
+    "Change of plans",
+    "Found a better deal",
+    "Travel restrictions",
+    "Personal emergency",
+    "Weather concerns",
+    "Other",
   ];
 
   return (
@@ -116,73 +181,52 @@ export default function Dashboard() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-1 mb-8 border-b border-border">
+          <div className="flex gap-1 mb-8 border-b border-border overflow-x-auto">
             {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab ? "border-accent text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-              >
+              <button key={tab} onClick={() => setActiveTab(tab)} className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap ${activeTab === tab ? "border-accent text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}>
                 {tab}
               </button>
             ))}
           </div>
 
-          {/* Content */}
           {activeTab === "My Bookings" && (
             <div className="animate-fade-in">
-              {/* Stat Cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {statCards.map((stat) => (
-                  <div key={stat.label} className="bg-card rounded-xl p-5 shadow-card flex items-center gap-4">
-                    <div className={`w-11 h-11 rounded-lg bg-muted flex items-center justify-center ${stat.color}`}>
-                      <stat.icon size={20} />
+                  <div key={stat.label} className="bg-card rounded-xl p-4 md:p-5 shadow-card flex items-center gap-3 md:gap-4">
+                    <div className={`w-10 h-10 md:w-11 md:h-11 rounded-lg bg-muted flex items-center justify-center ${stat.color}`}>
+                      <stat.icon size={18} />
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">{stat.label}</p>
-                      <p className="text-xl font-bold text-foreground">{stat.value}</p>
+                      <p className="text-[10px] md:text-xs text-muted-foreground">{stat.label}</p>
+                      <p className="text-lg md:text-xl font-bold text-foreground">{stat.value}</p>
                     </div>
                   </div>
                 ))}
               </div>
 
-              {/* Search, Filter, Sort, Export */}
               <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 <div className="relative flex-1">
                   <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    placeholder="Search bookings..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-10 bg-card"
-                  />
+                  <Input placeholder="Search bookings..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9 h-10 bg-card" />
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm"
-                  >
+                  <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm">
                     {statusFilters.map((s) => (
                       <option key={s} value={s}>{s === "all" ? "All Status" : s.charAt(0).toUpperCase() + s.slice(1)}</option>
                     ))}
                   </select>
-                  <select
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value)}
-                    className="h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm"
-                  >
+                  <select value={sort} onChange={(e) => setSort(e.target.value)} className="h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm">
                     {sortOptions.map((o) => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
                   </select>
                   <Button variant="outline" onClick={exportPDF} className="gap-2">
-                    <Download size={16} /> Export PDF
+                    <Download size={16} /> <span className="hidden sm:inline">Export PDF</span>
                   </Button>
                 </div>
               </div>
 
-              {/* Bookings List */}
               <div className="space-y-4">
                 {filteredBookings.length === 0 ? (
                   <div className="text-center py-16 bg-card rounded-xl shadow-card">
@@ -195,34 +239,52 @@ export default function Dashboard() {
                     <div key={booking.id} className="bg-card rounded-xl shadow-card overflow-hidden transition-shadow hover:shadow-lg">
                       <div className="flex flex-col md:flex-row">
                         <img src={booking.image} alt={booking.hotelName} loading="lazy" decoding="async" className="w-full md:w-52 h-44 md:h-auto object-cover" />
-                        <div className="flex-1 p-5 flex flex-col justify-between gap-4">
+                        <div className="flex-1 p-4 md:p-5 flex flex-col justify-between gap-3 md:gap-4">
                           <div>
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold text-foreground">{booking.hotelName}</h3>
+                            <div className="flex items-start gap-2 mb-1 flex-wrap">
+                              <h3 className="font-semibold text-foreground text-sm md:text-base">{booking.hotelName}</h3>
                               <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${statusColors[booking.status]}`}>
                                 {booking.status}
                               </span>
+                              {booking.refundStatus === "pending" && (
+                                <Badge variant="outline" className="text-[10px] border-accent/50 text-accent gap-1">
+                                  <RotateCcw size={10} /> Refund Pending
+                                </Badge>
+                              )}
+                              {booking.refundStatus === "processed" && (
+                                <Badge variant="outline" className="text-[10px] border-green-500/50 text-green-600 gap-1">
+                                  <CheckCircle size={10} /> Refunded ${booking.refundAmount}
+                                </Badge>
+                              )}
                             </div>
                             <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                               <MapPin size={14} /> {booking.location}
                             </div>
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex flex-wrap items-center gap-3 md:gap-4 text-xs md:text-sm text-muted-foreground">
                               <span className="flex items-center gap-1"><Calendar size={14} /> {booking.checkIn} → {booking.checkOut}</span>
                               <span>{booking.guests} guests · {booking.rooms} room</span>
                             </div>
+                            {booking.confirmationCode && (
+                              <p className="text-xs text-muted-foreground mt-1.5 font-mono">Conf: {booking.confirmationCode}</p>
+                            )}
                           </div>
                           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t border-border">
                             <div>
-                              <span className="text-xl font-bold text-foreground">${booking.total}</span>
+                              <span className="text-lg md:text-xl font-bold text-foreground">${booking.total}</span>
                               <span className="text-sm text-muted-foreground ml-1">total</span>
+                              {booking.paymentMethod && (
+                                <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                                  <CreditCard size={10} /> {booking.paymentMethod}
+                                </p>
+                              )}
                             </div>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => navigate(`/hotel/${booking.id}`)}>
+                              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => navigate(`/hotel/${booking.id}`)}>
                                 <Eye size={14} /> View
                               </Button>
-                              {booking.status !== "cancelled" && booking.status !== "completed" && (
-                                <Button size="sm" variant="outline" className="gap-1.5 text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => cancelBooking(booking.id)}>
-                                  <XCircle size={14} /> Cancel
+                              {(booking.status === "upcoming" || booking.status === "confirmed") && (
+                                <Button size="sm" variant="outline" className="gap-1.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => openCancelDialog(booking.id)}>
+                                  <XCircle size={14} /> Cancel & Refund
                                 </Button>
                               )}
                             </div>
@@ -241,22 +303,10 @@ export default function Dashboard() {
               <div className="bg-card rounded-xl p-6 shadow-card space-y-5">
                 <h2 className="text-lg font-semibold text-foreground">Personal Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1.5 block">First Name</label>
-                    <Input className="h-11 bg-muted/50" defaultValue="John" />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1.5 block">Last Name</label>
-                    <Input className="h-11 bg-muted/50" defaultValue="Doe" />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1.5 block">Email</label>
-                    <Input className="h-11 bg-muted/50" defaultValue="john.doe@email.com" />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground mb-1.5 block">Phone</label>
-                    <Input className="h-11 bg-muted/50" defaultValue="+1 (555) 123-4567" />
-                  </div>
+                  <div><label className="text-sm text-muted-foreground mb-1.5 block">First Name</label><Input className="h-11 bg-muted/50" defaultValue="John" /></div>
+                  <div><label className="text-sm text-muted-foreground mb-1.5 block">Last Name</label><Input className="h-11 bg-muted/50" defaultValue="Doe" /></div>
+                  <div><label className="text-sm text-muted-foreground mb-1.5 block">Email</label><Input className="h-11 bg-muted/50" defaultValue="john.doe@email.com" /></div>
+                  <div><label className="text-sm text-muted-foreground mb-1.5 block">Phone</label><Input className="h-11 bg-muted/50" defaultValue="+1 (555) 123-4567" /></div>
                 </div>
                 <Button className="bg-accent text-accent-foreground hover:bg-gold-light">Save Changes</Button>
               </div>
@@ -285,9 +335,7 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between py-3">
                     <div><div className="font-medium text-foreground text-sm">Currency</div><div className="text-xs text-muted-foreground">Preferred display currency</div></div>
                     <select className="h-9 px-3 rounded-lg border border-border bg-muted/50 text-foreground text-sm">
-                      <option>USD ($)</option>
-                      <option>EUR (€)</option>
-                      <option>GBP (£)</option>
+                      <option>USD ($)</option><option>EUR (€)</option><option>GBP (£)</option>
                     </select>
                   </div>
                 </div>
@@ -300,6 +348,124 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Cancel & Refund Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={(open) => { if (!open) closeCancelDialog(); }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+          {cancelStep === "confirm" && cancelTarget && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <AlertTriangle size={20} className="text-destructive" /> Cancel Reservation
+                </DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to cancel your reservation at <strong className="text-foreground">{cancelTarget.hotelName}</strong>?
+                </DialogDescription>
+              </DialogHeader>
+              <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Check-in</span><span className="text-foreground">{cancelTarget.checkIn}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Check-out</span><span className="text-foreground">{cancelTarget.checkOut}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Total Paid</span><span className="text-foreground font-semibold">${cancelTarget.total}</span></div>
+              </div>
+              <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <Info size={16} className="text-accent mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-medium text-foreground mb-1">Refund Policy</p>
+                    <p className="text-muted-foreground text-xs">{getRefundAmount(cancelTarget).policy}</p>
+                    <p className="text-accent font-semibold mt-1">Estimated refund: ${getRefundAmount(cancelTarget).amount} ({getRefundAmount(cancelTarget).percentage}%)</p>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={closeCancelDialog}>Keep Booking</Button>
+                <Button variant="destructive" onClick={proceedToReason}>Proceed</Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {cancelStep === "reason" && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Reason for Cancellation</DialogTitle>
+                <DialogDescription>Please let us know why you're cancelling (optional).</DialogDescription>
+              </DialogHeader>
+              <div className="grid grid-cols-2 gap-2">
+                {cancelReasons.map((r) => (
+                  <button key={r} onClick={() => setCancelReason(r)} className={`px-3 py-2.5 rounded-lg text-sm text-left transition-colors border ${cancelReason === r ? "border-accent bg-accent/10 text-foreground" : "border-border text-muted-foreground hover:bg-muted/50"}`}>
+                    {r}
+                  </button>
+                ))}
+              </div>
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={() => setCancelStep("confirm")}>Back</Button>
+                <Button variant="destructive" onClick={proceedToRefund}>Continue</Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {cancelStep === "refund" && cancelTarget && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Confirm Cancellation & Refund</DialogTitle>
+                <DialogDescription>Review your refund details before confirming.</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-3">
+                <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Original Amount</span><span className="text-foreground">${cancelTarget.total}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Refund Percentage</span><span className="text-foreground">{getRefundAmount(cancelTarget).percentage}%</span></div>
+                  <hr className="border-border" />
+                  <div className="flex justify-between font-semibold"><span className="text-foreground">Refund Amount</span><span className="text-accent">${getRefundAmount(cancelTarget).amount}</span></div>
+                </div>
+                {cancelTarget.paymentMethod && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CreditCard size={14} />
+                    <span>Refund to: {cancelTarget.paymentMethod}</span>
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">Refunds typically take 5-10 business days to process.</p>
+              </div>
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={() => setCancelStep("reason")}>Back</Button>
+                <Button variant="destructive" onClick={processRefund} disabled={refundProcessing}>
+                  {refundProcessing ? (
+                    <span className="flex items-center gap-2">
+                      <RotateCcw size={14} className="animate-spin" /> Processing...
+                    </span>
+                  ) : (
+                    "Confirm Cancellation"
+                  )}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+
+          {cancelStep === "done" && cancelTarget && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <CheckCircle size={20} className="text-green-500" /> Cancellation Complete
+                </DialogTitle>
+                <DialogDescription>Your reservation has been cancelled successfully.</DialogDescription>
+              </DialogHeader>
+              <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900/50 rounded-lg p-4 space-y-2 text-sm">
+                {getRefundAmount(cancelTarget).amount > 0 ? (
+                  <>
+                    <p className="text-foreground font-medium">Refund of ${getRefundAmount(cancelTarget).amount} initiated</p>
+                    <p className="text-muted-foreground text-xs">You'll receive the refund to your {cancelTarget.paymentMethod} within 5-10 business days.</p>
+                  </>
+                ) : (
+                  <p className="text-muted-foreground">No refund applicable based on the cancellation policy.</p>
+                )}
+              </div>
+              <DialogFooter>
+                <Button onClick={closeCancelDialog} className="bg-accent text-accent-foreground">Done</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
