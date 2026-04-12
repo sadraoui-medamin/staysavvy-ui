@@ -252,7 +252,7 @@ export default function Dashboard() {
                                 </Badge>
                               )}
                               {booking.refundStatus === "processed" && (
-                                <Badge variant="outline" className="text-[10px] border-green-500/50 text-green-600 gap-1">
+                                <Badge variant="outline" className="text-[10px] border-accent/50 text-accent gap-1">
                                   <CheckCircle size={10} /> Refunded ${booking.refundAmount}
                                 </Badge>
                               )}
