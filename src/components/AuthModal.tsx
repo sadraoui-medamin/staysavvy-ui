@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,8 +12,22 @@ interface AuthModalProps {
 
 export function AuthModal({ mode, onClose, onSwitch }: AuthModalProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
 
   if (!mode) return null;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const v = email.trim().toLowerCase();
+    // Hidden staff access: only StayVista internal emails reach /staff
+    if (v.endsWith("@stayvista.com") || v === "admin@stayvista.com") {
+      onClose();
+      navigate("/staff");
+      return;
+    }
+    onClose();
+  };
 
   const isLogin = mode === "login";
 
@@ -36,7 +51,7 @@ export function AuthModal({ mode, onClose, onSwitch }: AuthModalProps) {
           </p>
         </div>
 
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-4" onSubmit={handleSubmit}>
           {!isLogin && (
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
@@ -45,7 +60,13 @@ export function AuthModal({ mode, onClose, onSwitch }: AuthModalProps) {
           )}
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <Input type="email" placeholder="Email Address" className="pl-10 h-12 bg-muted/50 border-border" />
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email Address"
+              className="pl-10 h-12 bg-muted/50 border-border"
+            />
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
