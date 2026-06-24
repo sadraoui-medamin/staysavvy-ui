@@ -20,10 +20,15 @@ export function AuthModal({ mode, onClose, onSwitch }: AuthModalProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const v = email.trim().toLowerCase();
-    // Hidden staff access: only StayVista internal emails reach /staff
-    if (v.endsWith("@stayvista.com") || v === "admin@stayvista.com") {
-      onClose();
-      navigate("/staff");
+    // Hidden staff access: any @stayvista.com email logs into the staff console.
+    // The email maps to a role (super_admin / admin / revenue / accountant / support).
+    if (v.endsWith("@stayvista.com")) {
+      import("@/lib/staffRoles").then(({ resolveIdentityFromEmail, saveIdentity }) => {
+        const id = resolveIdentityFromEmail(v);
+        if (id) saveIdentity(id);
+        onClose();
+        navigate("/staff");
+      });
       return;
     }
     onClose();

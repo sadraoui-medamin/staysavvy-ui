@@ -8,6 +8,7 @@ import {
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { mockProperties, type StaffProperty } from "@/lib/staffMockData";
+import { useStaffAuth } from "@/lib/staffRoles";
 import { toast } from "sonner";
 
 const statusStyles: Record<string, string> = {
@@ -18,6 +19,8 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function StaffProperties() {
+  const { can } = useStaffAuth();
+  const canModerate = can("properties.moderate");
   const [items, setItems] = useState<StaffProperty[]>(mockProperties);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StaffProperty["status"]>("all");
@@ -92,20 +95,23 @@ export default function StaffProperties() {
               <Button size="sm" variant="outline" className="h-8" onClick={() => toast.info(`Opening ${p.id}`)}>
                 <Eye size={12} className="mr-1" /> View
               </Button>
-              {p.status !== "approved" && (
+              {canModerate && p.status !== "approved" && (
                 <Button size="sm" className="h-8 bg-emerald-500 hover:bg-emerald-500/90 text-white" onClick={() => setStatus(p.id, "approved")}>
                   <CheckCircle2 size={12} className="mr-1" /> Approve
                 </Button>
               )}
-              {p.status !== "flagged" && (
+              {canModerate && p.status !== "flagged" && (
                 <Button size="sm" variant="outline" className="h-8 text-orange-600 border-orange-500/40" onClick={() => setStatus(p.id, "flagged")}>
                   <Flag size={12} className="mr-1" /> Flag
                 </Button>
               )}
-              {p.status !== "rejected" && (
+              {canModerate && p.status !== "rejected" && (
                 <Button size="sm" variant="outline" className="h-8 text-destructive border-destructive/40" onClick={() => setStatus(p.id, "rejected")}>
                   <XCircle size={12} className="mr-1" /> Reject
                 </Button>
+              )}
+              {!canModerate && (
+                <span className="text-[11px] text-muted-foreground italic self-center">Read-only</span>
               )}
             </div>
           </div>
