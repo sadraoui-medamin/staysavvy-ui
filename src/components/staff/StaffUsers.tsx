@@ -9,6 +9,7 @@ import {
   DropdownMenuRadioGroup, DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { mockUsers, type StaffUser } from "@/lib/staffMockData";
+import { useStaffAuth } from "@/lib/staffRoles";
 import { toast } from "sonner";
 
 const statusStyles: Record<string, string> = {
@@ -18,6 +19,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function StaffUsers() {
+  const { can } = useStaffAuth();
   const [users, setUsers] = useState<StaffUser[]>(mockUsers);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "client" | "partner">("all");
@@ -124,14 +126,19 @@ export default function StaffUsers() {
                   <Mail size={14} className="mr-2" /> Send email
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                {u.status !== "active" && (
+                {can("users.manage") && u.status !== "active" && (
                   <DropdownMenuItem onClick={() => updateStatus(u.id, "active")}>
                     <CheckCircle2 size={14} className="mr-2 text-emerald-500" /> Activate
                   </DropdownMenuItem>
                 )}
-                {u.status !== "suspended" && (
+                {can("users.manage") && u.status !== "suspended" && (
                   <DropdownMenuItem className="text-destructive" onClick={() => updateStatus(u.id, "suspended")}>
                     <Ban size={14} className="mr-2" /> Suspend
+                  </DropdownMenuItem>
+                )}
+                {!can("users.manage") && (
+                  <DropdownMenuItem disabled className="text-xs text-muted-foreground">
+                    Read-only access
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>

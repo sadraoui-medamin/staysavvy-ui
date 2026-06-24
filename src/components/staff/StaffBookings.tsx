@@ -8,6 +8,7 @@ import {
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { mockStaffBookings, type StaffBooking } from "@/lib/staffMockData";
+import { useStaffAuth } from "@/lib/staffRoles";
 import { toast } from "sonner";
 
 const statusStyles: Record<string, string> = {
@@ -19,6 +20,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export default function StaffBookings() {
+  const { can } = useStaffAuth();
   const [items, setItems] = useState<StaffBooking[]>(mockStaffBookings);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StaffBooking["status"]>("all");
@@ -93,12 +95,12 @@ export default function StaffBookings() {
               <Button size="sm" variant="outline" className="h-8" onClick={() => toast.info(`Opening ${b.id}`)}>
                 <Eye size={12} className="mr-1" /> View
               </Button>
-              {b.status === "refund_pending" && (
+              {can("refunds.process") && b.status === "refund_pending" && (
                 <Button size="sm" className="h-8 bg-accent text-accent-foreground" onClick={() => refund(b.id)}>
                   <RefreshCcw size={12} className="mr-1" /> Refund
                 </Button>
               )}
-              {b.status !== "cancelled" && b.status !== "completed" && (
+              {can("bookings.cancel") && b.status !== "cancelled" && b.status !== "completed" && (
                 <Button size="sm" variant="outline" className="h-8 text-destructive border-destructive/40" onClick={() => cancel(b.id)}>
                   <XCircle size={12} className="mr-1" /> Cancel
                 </Button>
