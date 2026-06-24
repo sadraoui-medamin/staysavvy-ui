@@ -51,10 +51,6 @@ const StaffDashboard = () => {
 
   const visibleNav = useMemo(() => NAV.filter((n) => can(n.perm)), [role]);
 
-  // Reset to overview if active tab is no longer permitted after a role switch.
-  if (!visibleNav.some((n) => n.key === activeTab)) {
-    setActiveTab("overview");
-  }
 
   const setIdentity = (id: StaffIdentity) => {
     saveIdentity(id);
