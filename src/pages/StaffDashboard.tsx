@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link, useNavigate, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, CalendarCheck, BarChart3, Wallet, ShieldCheck,
   LogOut, Menu, X, Moon, Sun, Shield, ChevronDown, Sparkles, ArrowLeftRight,
@@ -51,9 +51,9 @@ const StaffDashboard = () => {
 
   const visibleNav = useMemo(() => NAV.filter((n) => can(n.perm)), [role]);
 
-  // If active tab is no longer permitted (after role switch), fall back to first allowed.
+  // Reset to overview if active tab is no longer permitted after a role switch.
   if (!visibleNav.some((n) => n.key === activeTab)) {
-    return <Navigate to="/staff" replace state={{}} />;
+    setActiveTab("overview");
   }
 
   const setIdentity = (id: StaffIdentity) => {
