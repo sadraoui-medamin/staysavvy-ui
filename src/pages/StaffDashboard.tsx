@@ -217,6 +217,8 @@ const StaffDashboard = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
+                {can("notifications.view") && <StaffNotificationBell onOpenTab={setActiveTab} />}
+
                 <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleTheme} aria-label="Toggle theme">
                   {isDark ? <Sun size={16} /> : <Moon size={16} />}
                 </Button>
