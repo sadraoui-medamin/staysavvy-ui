@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Bell, Check, Trash2, AlertOctagon, Building2, CalendarCheck, RefreshCcw, MessageSquare, ShieldAlert } from "lucide-react";
+import { Bell, Check, Trash2, AlertOctagon, Building2, CalendarCheck, RefreshCcw, MessageSquare, ShieldAlert, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useStaffStore, NOTIFICATION_STYLES, type NotificationKind } from "@/lib/staffSupport";
 
-const KIND_ICON: Record<NotificationKind, React.ComponentType<{ size?: number; className?: string }>> = {
+const KIND_ICON: Record<NotificationKind, LucideIcon> = {
   property: Building2,
   booking: CalendarCheck,
   refund: RefreshCcw,
