@@ -79,6 +79,7 @@ const StaffDashboard = () => {
       case "properties": return can("properties.view") ? <StaffProperties /> : null;
       case "bookings":   return can("bookings.view")   ? <StaffBookings />   : null;
       case "finance":    return can("finance.view")    ? <StaffFinance />    : null;
+      case "support":    return can("support.view")    ? <StaffSupport />    : null;
       case "reports":    return can("reports.view")    ? <StaffReports />    : null;
       case "team":       return can("team.view")       ? <StaffTeam />       : null;
       default: return null;
