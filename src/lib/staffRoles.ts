@@ -11,18 +11,21 @@ export type StaffRole =
 export type Permission =
   | "overview.view"
   | "users.view"
-  | "users.manage"        // suspend/activate
+  | "users.manage"
   | "properties.view"
-  | "properties.moderate" // approve / reject / flag
+  | "properties.moderate"
   | "bookings.view"
   | "bookings.cancel"
   | "refunds.process"
-  | "finance.view"        // payouts, revenue ledger
-  | "finance.payout"      // release payouts
+  | "finance.view"
+  | "finance.payout"
   | "reports.view"
   | "logs.view"
   | "team.view"
-  | "team.manage";        // add / remove staff members
+  | "team.manage"
+  | "support.view"
+  | "support.handle"
+  | "notifications.view";
 
 export type RoleDef = {
   key: StaffRole;
@@ -44,6 +47,7 @@ export const ROLES: Record<StaffRole, RoleDef> = {
       "overview.view","users.view","users.manage","properties.view","properties.moderate",
       "bookings.view","bookings.cancel","refunds.process","finance.view","finance.payout",
       "reports.view","logs.view","team.view","team.manage",
+      "support.view","support.handle","notifications.view",
     ],
   },
   admin: {
@@ -55,6 +59,7 @@ export const ROLES: Record<StaffRole, RoleDef> = {
     permissions: [
       "overview.view","users.view","users.manage","properties.view","properties.moderate",
       "bookings.view","bookings.cancel","reports.view","logs.view","team.view",
+      "support.view","support.handle","notifications.view",
     ],
   },
   revenue_manager: {
@@ -65,6 +70,7 @@ export const ROLES: Record<StaffRole, RoleDef> = {
     initials: "RM",
     permissions: [
       "overview.view","properties.view","bookings.view","finance.view","reports.view",
+      "notifications.view",
     ],
   },
   accountant: {
@@ -75,6 +81,7 @@ export const ROLES: Record<StaffRole, RoleDef> = {
     initials: "AC",
     permissions: [
       "overview.view","bookings.view","refunds.process","finance.view","finance.payout","reports.view","logs.view",
+      "support.view","notifications.view",
     ],
   },
   support: {
@@ -85,6 +92,7 @@ export const ROLES: Record<StaffRole, RoleDef> = {
     initials: "SP",
     permissions: [
       "overview.view","users.view","properties.view","bookings.view","reports.view",
+      "support.view","support.handle","notifications.view",
     ],
   },
 };

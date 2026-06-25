@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, CalendarCheck, BarChart3, Wallet, ShieldCheck,
   LogOut, Menu, X, Moon, Sun, Shield, ChevronDown, Sparkles, ArrowLeftRight,
+  LifeBuoy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,8 @@ import StaffBookings from "@/components/staff/StaffBookings";
 import StaffReports from "@/components/staff/StaffReports";
 import StaffFinance from "@/components/staff/StaffFinance";
 import StaffTeam from "@/components/staff/StaffTeam";
+import StaffSupport from "@/components/staff/StaffSupport";
+import StaffNotificationBell from "@/components/staff/StaffNotificationBell";
 import {
   ROLES, ROLE_LIST, STAFF_DIRECTORY, StaffAuthContext, loadIdentity, saveIdentity,
   type Permission, type StaffIdentity,
@@ -34,6 +37,7 @@ const NAV: NavItem[] = [
   { key: "properties", label: "Properties",        icon: Building2,        perm: "properties.view" },
   { key: "bookings",   label: "Bookings & Refunds",icon: CalendarCheck,    perm: "bookings.view" },
   { key: "finance",    label: "Finance & Payouts", icon: Wallet,           perm: "finance.view" },
+  { key: "support",    label: "Support & Disputes",icon: LifeBuoy,         perm: "support.view" },
   { key: "reports",    label: "Reports & Logs",    icon: BarChart3,        perm: "reports.view" },
   { key: "team",       label: "Staff & Roles",     icon: ShieldCheck,      perm: "team.view" },
 ];
@@ -75,6 +79,7 @@ const StaffDashboard = () => {
       case "properties": return can("properties.view") ? <StaffProperties /> : null;
       case "bookings":   return can("bookings.view")   ? <StaffBookings />   : null;
       case "finance":    return can("finance.view")    ? <StaffFinance />    : null;
+      case "support":    return can("support.view")    ? <StaffSupport />    : null;
       case "reports":    return can("reports.view")    ? <StaffReports />    : null;
       case "team":       return can("team.view")       ? <StaffTeam />       : null;
       default: return null;
@@ -211,6 +216,8 @@ const StaffDashboard = () => {
                     })}
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                {can("notifications.view") && <StaffNotificationBell onOpenTab={setActiveTab} />}
 
                 <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleTheme} aria-label="Toggle theme">
                   {isDark ? <Sun size={16} /> : <Moon size={16} />}
