@@ -11,18 +11,21 @@ export type StaffRole =
 export type Permission =
   | "overview.view"
   | "users.view"
-  | "users.manage"        // suspend/activate
+  | "users.manage"
   | "properties.view"
-  | "properties.moderate" // approve / reject / flag
+  | "properties.moderate"
   | "bookings.view"
   | "bookings.cancel"
   | "refunds.process"
-  | "finance.view"        // payouts, revenue ledger
-  | "finance.payout"      // release payouts
+  | "finance.view"
+  | "finance.payout"
   | "reports.view"
   | "logs.view"
   | "team.view"
-  | "team.manage";        // add / remove staff members
+  | "team.manage"
+  | "support.view"
+  | "support.handle"
+  | "notifications.view";
 
 export type RoleDef = {
   key: StaffRole;
