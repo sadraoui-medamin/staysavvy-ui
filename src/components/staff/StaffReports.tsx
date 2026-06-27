@@ -8,6 +8,7 @@ import {
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { mockLogs, revenueSeries, staffKPIs } from "@/lib/staffMockData";
+import { downloadCSV } from "@/lib/staffExport";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { toast } from "sonner";
 
@@ -43,7 +44,7 @@ export default function StaffReports() {
               <TrendingUp size={12} className="text-emerald-500" /> +{staffKPIs.growth}% MoM
             </p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => toast.success("Report exported")}>
+          <Button size="sm" variant="outline" onClick={() => { downloadCSV("bookings-by-month.csv", revenueSeries); toast.success("Report exported"); }}>
             <Download size={14} className="mr-1.5" /> Export
           </Button>
         </div>
