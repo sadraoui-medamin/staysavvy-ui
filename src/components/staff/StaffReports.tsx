@@ -90,6 +90,9 @@ export default function StaffReports() {
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Button variant="outline" size="sm" className="h-9" onClick={() => { downloadCSV("audit-logs.csv", filtered); toast.success(`Exported ${filtered.length} logs`); }}>
+              <Download size={14} className="mr-1.5" /> Export
+            </Button>
           </div>
         </div>
 

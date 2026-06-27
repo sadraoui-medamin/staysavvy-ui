@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { revenueSeries, staffKPIs } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
+import { downloadCSV } from "@/lib/staffExport";
 import { toast } from "sonner";
 
 type Payout = { id: string; partner: string; amount: number; status: "pending" | "released" | "scheduled"; date: string };
@@ -75,7 +76,7 @@ export default function StaffFinance() {
       <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm sm:text-base font-display font-semibold">Revenue ledger</h2>
-          <Button size="sm" variant="outline" onClick={() => toast.success("Ledger exported (.csv)")}>
+          <Button size="sm" variant="outline" onClick={() => { downloadCSV("revenue-ledger.csv", revenueSeries); toast.success("Ledger exported (.csv)"); }}>
             <Download size={14} className="mr-1.5" /> Export
           </Button>
         </div>
