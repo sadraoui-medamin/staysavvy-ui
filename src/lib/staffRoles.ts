@@ -19,6 +19,8 @@ export type Permission =
   | "refunds.process"
   | "finance.view"
   | "finance.payout"
+  | "revenue.view"
+  | "revenue.manage"
   | "reports.view"
   | "logs.view"
   | "team.view"
@@ -46,6 +48,7 @@ export const ROLES: Record<StaffRole, RoleDef> = {
     permissions: [
       "overview.view","users.view","users.manage","properties.view","properties.moderate",
       "bookings.view","bookings.cancel","refunds.process","finance.view","finance.payout",
+      "revenue.view","revenue.manage",
       "reports.view","logs.view","team.view","team.manage",
       "support.view","support.handle","notifications.view",
     ],
@@ -58,19 +61,19 @@ export const ROLES: Record<StaffRole, RoleDef> = {
     initials: "AD",
     permissions: [
       "overview.view","users.view","users.manage","properties.view","properties.moderate",
-      "bookings.view","bookings.cancel","reports.view","logs.view","team.view",
+      "bookings.view","bookings.cancel","revenue.view","reports.view","logs.view","team.view",
       "support.view","support.handle","notifications.view",
     ],
   },
   revenue_manager: {
     key: "revenue_manager",
     label: "Revenue Manager",
-    description: "Owns pricing, performance and revenue analytics.",
+    description: "Owns pricing, subscriptions, commissions and revenue analytics.",
     color: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
     initials: "RM",
     permissions: [
-      "overview.view","properties.view","bookings.view","finance.view","reports.view",
-      "notifications.view",
+      "overview.view","properties.view","bookings.view","finance.view",
+      "revenue.view","revenue.manage","reports.view","notifications.view",
     ],
   },
   accountant: {
