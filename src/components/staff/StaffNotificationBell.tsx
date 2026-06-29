@@ -72,8 +72,10 @@ export default function StaffNotificationBell({ onOpenTab }: Props) {
                 key={n.id}
                 onClick={() => {
                   markRead(n.id);
+                  setFocusRef(n.recordId ?? null);
                   if (n.targetTab) onOpenTab(n.targetTab);
                 }}
+
                 className={`w-full text-left p-3 flex items-start gap-3 transition-colors hover:bg-muted/50 ${!n.read ? "bg-accent/[0.04]" : ""}`}
               >
                 <div className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 ${styles.chip}`}>
