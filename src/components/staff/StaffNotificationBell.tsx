@@ -27,8 +27,9 @@ const formatTime = (iso: string) => {
 };
 
 export default function StaffNotificationBell({ onOpenTab }: Props) {
-  const { notifications, markRead, markAllRead, clearAll } = useStaffStore();
+  const { notifications, markRead, markAllRead, clearAll, setFocusRef } = useStaffStore();
   const unread = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
+
 
   return (
     <DropdownMenu>
