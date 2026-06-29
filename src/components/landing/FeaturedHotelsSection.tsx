@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HotelCard } from "@/components/HotelCard";
 import { hotels } from "@/data/hotels";
@@ -8,6 +8,10 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 export function FeaturedHotelsSection() {
   const navigate = useNavigate();
   const section = useScrollAnimation(0.1);
+
+  // Pro subscription hotels get featured placement. Fall back to top-rated if none.
+  const proHotels = hotels.filter((h) => h.subscriptionTier === "pro").slice(0, 6);
+  const featured = proHotels.length ? proHotels : hotels.slice(0, 6);
 
   return (
     <section
@@ -19,14 +23,14 @@ export function FeaturedHotelsSection() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <span className="inline-block px-4 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-widest mb-4">
-              Curated Stays
+            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent/10 text-accent text-xs font-semibold uppercase tracking-widest mb-4">
+              <Crown size={12} /> Pro Partner Hotels
             </span>
             <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">
               Featured Hotels
             </h2>
             <p className="text-muted-foreground mt-3 max-w-lg">
-              Handpicked luxury stays for an unforgettable experience
+              Pro-tier partners showcased here for an unforgettable experience.
             </p>
           </div>
           <Button
@@ -39,7 +43,7 @@ export function FeaturedHotelsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {hotels.slice(0, 3).map((hotel, idx) => (
+          {featured.slice(0, 3).map((hotel, idx) => (
             <div
               key={hotel.id}
               style={{
@@ -57,3 +61,4 @@ export function FeaturedHotelsSection() {
     </section>
   );
 }
+
