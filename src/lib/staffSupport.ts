@@ -261,4 +261,7 @@ export const useStaffStore = create<Store>((set) => ({
   markAllRead: () =>
     set((s) => ({ notifications: s.notifications.map((n) => ({ ...n, read: true })) })),
   clearAll: () => set({ notifications: [] }),
+  focusRef: null,
+  setFocusRef: (ref) => set({ focusRef: ref }),
 }));
+
