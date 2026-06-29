@@ -27,6 +27,7 @@ const statusStyles: Record<string, string> = {
 
 export default function StaffBookings() {
   const { can } = useStaffAuth();
+  const pushNotification = useStaffStore((s) => s.pushNotification);
   const [items, setItems] = useState<StaffBooking[]>(mockStaffBookings);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StaffBooking["status"]>("all");
@@ -43,13 +44,24 @@ export default function StaffBookings() {
   const refund = () => {
     if (!confirmRefund) return;
     setItems((p) => p.map((b) => (b.id === confirmRefund.id ? { ...b, status: "cancelled", refundAmount: b.total } : b)));
+    pushNotification({
+      kind: "refund", title: "Refund processed",
+      description: `${confirmRefund.id} · €${confirmRefund.total}`,
+      targetTab: "bookings", recordId: confirmRefund.id, severity: "info",
+    });
     toast.success(`Refund processed for ${confirmRefund.id}`);
     setConfirmRefund(null);
   };
   const cancel = () => {
     if (!confirmCancel) return;
     setItems((p) => p.map((b) => (b.id === confirmCancel.id ? { ...b, status: "cancelled" } : b)));
+    pushNotification({
+      kind: "booking", title: "Booking cancelled",
+      description: `${confirmCancel.id} · ${confirmCancel.guest}`,
+      targetTab: "bookings", recordId: confirmCancel.id, severity: "warning",
+    });
     toast.success(`Booking ${confirmCancel.id} cancelled`);
+
     setConfirmCancel(null);
   };
 
