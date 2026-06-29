@@ -7,6 +7,8 @@ import dest1 from "@/assets/dest-1.jpg";
 import dest2 from "@/assets/dest-2.jpg";
 import dest3 from "@/assets/dest-3.jpg";
 
+export type SubscriptionTier = "standard" | "pro" | "enterprise";
+
 export interface Hotel {
   id: string;
   name: string;
@@ -20,6 +22,7 @@ export interface Hotel {
   amenities: string[];
   category: string;
   starRating: number;
+  subscriptionTier?: SubscriptionTier;
   rooms: Room[];
   reviewsList: Review[];
 }
