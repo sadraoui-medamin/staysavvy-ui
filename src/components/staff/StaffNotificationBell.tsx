@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Bell, Check, Trash2, AlertOctagon, Building2, CalendarCheck, RefreshCcw, MessageSquare, ShieldAlert, type LucideIcon } from "lucide-react";
+import { Bell, Check, Trash2, AlertOctagon, Building2, CalendarCheck, RefreshCcw, MessageSquare, ShieldAlert, CheckCircle2, XCircle, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,8 +12,11 @@ const KIND_ICON: Record<NotificationKind, LucideIcon> = {
   booking: CalendarCheck,
   refund: RefreshCcw,
   dispute: MessageSquare,
+  approval: CheckCircle2,
+  rejection: XCircle,
   log: ShieldAlert,
 };
+
 
 type Props = { onOpenTab: (tab: string) => void };
 
