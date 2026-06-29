@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Bell, Check, Trash2, AlertOctagon, Building2, CalendarCheck, RefreshCcw, MessageSquare, ShieldAlert, type LucideIcon } from "lucide-react";
+import { Bell, Check, Trash2, AlertOctagon, Building2, CalendarCheck, RefreshCcw, MessageSquare, ShieldAlert, CheckCircle2, XCircle, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,8 +12,11 @@ const KIND_ICON: Record<NotificationKind, LucideIcon> = {
   booking: CalendarCheck,
   refund: RefreshCcw,
   dispute: MessageSquare,
+  approval: CheckCircle2,
+  rejection: XCircle,
   log: ShieldAlert,
 };
+
 
 type Props = { onOpenTab: (tab: string) => void };
 
@@ -27,8 +30,9 @@ const formatTime = (iso: string) => {
 };
 
 export default function StaffNotificationBell({ onOpenTab }: Props) {
-  const { notifications, markRead, markAllRead, clearAll } = useStaffStore();
+  const { notifications, markRead, markAllRead, clearAll, setFocusRef } = useStaffStore();
   const unread = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
+
 
   return (
     <DropdownMenu>
@@ -71,8 +75,10 @@ export default function StaffNotificationBell({ onOpenTab }: Props) {
                 key={n.id}
                 onClick={() => {
                   markRead(n.id);
+                  setFocusRef(n.recordId ?? null);
                   if (n.targetTab) onOpenTab(n.targetTab);
                 }}
+
                 className={`w-full text-left p-3 flex items-start gap-3 transition-colors hover:bg-muted/50 ${!n.read ? "bg-accent/[0.04]" : ""}`}
               >
                 <div className={`w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 ${styles.chip}`}>

@@ -7,6 +7,8 @@ import dest1 from "@/assets/dest-1.jpg";
 import dest2 from "@/assets/dest-2.jpg";
 import dest3 from "@/assets/dest-3.jpg";
 
+export type SubscriptionTier = "standard" | "pro" | "enterprise";
+
 export interface Hotel {
   id: string;
   name: string;
@@ -20,6 +22,7 @@ export interface Hotel {
   amenities: string[];
   category: string;
   starRating: number;
+  subscriptionTier?: SubscriptionTier;
   rooms: Room[];
   reviewsList: Review[];
 }
@@ -338,6 +341,17 @@ export const hotels: Hotel[] = [
     ],
   },
 ];
+
+// ─── Subscription tiers ──────────────────────────────────────────────
+// Enterprise = top-tier sponsored hotels shown in the home banner.
+// Pro        = priority placement in the Featured Hotels section.
+const TIERS: Record<string, SubscriptionTier> = {
+  "1": "enterprise", "3": "enterprise", "9": "enterprise",
+  "2": "pro", "4": "pro", "7": "pro", "12": "pro",
+};
+hotels.forEach((h) => { h.subscriptionTier = TIERS[h.id] ?? "standard"; });
+
+
 
 export const myBookings: Booking[] = [
   {

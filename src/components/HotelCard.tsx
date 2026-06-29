@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
-import { Star, MapPin } from "lucide-react";
+import { Star, MapPin, Crown } from "lucide-react";
 import type { Hotel } from "@/data/hotels";
 
 export function HotelCard({ hotel }: { hotel: Hotel }) {
+  const isPro = hotel.subscriptionTier === "pro";
+  const isEnterprise = hotel.subscriptionTier === "enterprise";
   return (
     <Link to={`/hotel/${hotel.id}`} className="group block">
-      <div className="bg-card rounded-xl overflow-hidden shadow-card hover-lift">
+      <div className={`bg-card rounded-xl overflow-hidden shadow-card hover-lift ${isPro ? "ring-1 ring-accent/40" : ""}`}>
         <div className="relative aspect-[4/3] overflow-hidden">
           <img
             src={hotel.image}
@@ -14,6 +16,13 @@ export function HotelCard({ hotel }: { hotel: Hotel }) {
             decoding="async"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
+          {(isPro || isEnterprise) && (
+            <div className={`absolute top-3 left-3 flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-sm ${
+              isEnterprise ? "bg-foreground/90 text-background" : "bg-accent text-accent-foreground"
+            }`}>
+              <Crown size={10} /> {isEnterprise ? "Enterprise" : "Pro"}
+            </div>
+          )}
           <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1">
             <Star className="fill-accent text-accent" size={14} />
             <span className="text-sm font-semibold text-foreground">{hotel.rating}</span>
@@ -41,3 +50,4 @@ export function HotelCard({ hotel }: { hotel: Hotel }) {
     </Link>
   );
 }
+

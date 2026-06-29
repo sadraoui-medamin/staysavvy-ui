@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, CheckCircle2, XCircle, Flag, Eye, Download, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { mockProperties, type StaffProperty } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
-import { downloadCSV } from "@/lib/staffExport";
+import { useStaffStore } from "@/lib/staffSupport";
+
+import { ExportReportDialog, type ExportField } from "@/components/staff/ExportReportDialog";
 import { toast } from "sonner";
+
 
 const statusStyles: Record<string, string> = {
   approved: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
@@ -26,6 +29,9 @@ const statusStyles: Record<string, string> = {
 export default function StaffProperties() {
   const { can } = useStaffAuth();
   const canModerate = can("properties.moderate");
+  const pushNotification = useStaffStore((s) => s.pushNotification);
+  const focusRef = useStaffStore((s) => s.focusRef);
+  const setFocusRef = useStaffStore((s) => s.setFocusRef);
   const [items, setItems] = useState<StaffProperty[]>(mockProperties);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StaffProperty["status"]>("all");
@@ -33,6 +39,18 @@ export default function StaffProperties() {
   const [editing, setEditing] = useState<StaffProperty | null>(null);
   const [draft, setDraft] = useState<StaffProperty | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<StaffProperty | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+
+  // Deep-link from notification center: open the corresponding record.
+  useEffect(() => {
+    if (!focusRef) return;
+    const match = items.find((p) => p.id === focusRef);
+    if (match) {
+      setViewing(match);
+      setSearch(focusRef);
+    }
+    setFocusRef(null);
+  }, [focusRef, items, setFocusRef]);
 
   const filtered = useMemo(() => items.filter((p) => {
     if (statusFilter !== "all" && p.status !== statusFilter) return false;
@@ -41,8 +59,20 @@ export default function StaffProperties() {
   }), [items, search, statusFilter]);
 
   const setStatus = (id: string, status: StaffProperty["status"]) => {
+    const prop = items.find((x) => x.id === id);
     setItems((p) => p.map((x) => (x.id === id ? { ...x, status } : x)));
     toast.success(`Property ${id} ${status}`);
+    if (prop) {
+      const kind = status === "approved" ? "approval" : status === "rejected" ? "rejection" : "property";
+      pushNotification({
+        kind,
+        title: `Property ${status}`,
+        description: `${prop.name} (${id})`,
+        targetTab: "properties",
+        recordId: id,
+        severity: status === "rejected" ? "warning" : status === "flagged" ? "warning" : "info",
+      });
+    }
   };
 
   const startEdit = (p: StaffProperty) => { setEditing(p); setDraft({ ...p }); };
@@ -60,10 +90,18 @@ export default function StaffProperties() {
     setConfirmDelete(null);
   };
 
-  const exportItems = () => {
-    downloadCSV("properties.csv", filtered);
-    toast.success(`Exported ${filtered.length} properties`);
-  };
+  const exportFields: ExportField[] = [
+    { key: "id", label: "ID", default: true },
+    { key: "name", label: "Property", default: true },
+    { key: "partner", label: "Partner", default: true },
+    { key: "city", label: "City", default: true },
+    { key: "country", label: "Country", default: true },
+    { key: "rooms", label: "Rooms", default: true },
+    { key: "rating", label: "Rating" },
+    { key: "status", label: "Status", default: true },
+    { key: "submittedAt", label: "Submitted" },
+  ];
+
 
   return (
     <div className="space-y-4 sm:space-y-5">
@@ -72,7 +110,7 @@ export default function StaffProperties() {
           <h1 className="text-xl sm:text-2xl font-display font-bold">Properties Moderation</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Review submissions, flag issues, and curate the catalog.</p>
         </div>
-        <Button size="sm" variant="outline" onClick={exportItems}><Download size={14} className="mr-1.5" /> Export</Button>
+        <Button size="sm" variant="outline" onClick={() => setExportOpen(true)}><Download size={14} className="mr-1.5" /> Export</Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">
@@ -204,7 +242,27 @@ export default function StaffProperties() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ExportReportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        title="Export properties report"
+        fileBase="properties"
+        fields={exportFields}
+        data={filtered as unknown as Record<string, unknown>[]}
+        dateKey="submittedAt"
+        groupOptions={[
+          { key: "status",  label: "Status" },
+          { key: "country", label: "Country" },
+          { key: "partner", label: "Partner" },
+        ]}
+        templates={[
+          { key: "summary",  label: "Summary",  fields: ["id", "name", "status", "partner"] },
+          { key: "detailed", label: "Detailed", fields: exportFields.map((f) => f.key) },
+        ]}
+      />
     </div>
+
   );
 }
 

@@ -8,8 +8,10 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { DestinationsSection } from "@/components/landing/DestinationsSection";
 import { FeaturedHotelsSection } from "@/components/landing/FeaturedHotelsSection";
+import { EnterpriseBanner } from "@/components/landing/EnterpriseBanner";
 import { TrustSection, CtaSection } from "@/components/landing/CtaSections";
 import { PartnerSection } from "@/components/landing/PartnerSection";
+
 import heroImg from "@/assets/hero-hotel.jpg";
 import hotel1 from "@/assets/hotel-1.jpg";
 import dest1 from "@/assets/dest-1.jpg";
@@ -142,8 +144,12 @@ const Index = () => {
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </section>
 
+      {/* ─── Enterprise Spotlight Banner ─── */}
+      <EnterpriseBanner />
+
       {/* ─── Trust / Why Us ─── */}
       <TrustSection />
+
 
       {/* ─── Destinations ─── */}
       <DestinationsSection />
