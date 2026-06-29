@@ -29,6 +29,9 @@ const statusStyles: Record<string, string> = {
 export default function StaffProperties() {
   const { can } = useStaffAuth();
   const canModerate = can("properties.moderate");
+  const pushNotification = useStaffStore((s) => s.pushNotification);
+  const focusRef = useStaffStore((s) => s.focusRef);
+  const setFocusRef = useStaffStore((s) => s.setFocusRef);
   const [items, setItems] = useState<StaffProperty[]>(mockProperties);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | StaffProperty["status"]>("all");
@@ -36,6 +39,18 @@ export default function StaffProperties() {
   const [editing, setEditing] = useState<StaffProperty | null>(null);
   const [draft, setDraft] = useState<StaffProperty | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<StaffProperty | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+
+  // Deep-link from notification center: open the corresponding record.
+  useEffect(() => {
+    if (!focusRef) return;
+    const match = items.find((p) => p.id === focusRef);
+    if (match) {
+      setViewing(match);
+      setSearch(focusRef);
+    }
+    setFocusRef(null);
+  }, [focusRef, items, setFocusRef]);
 
   const filtered = useMemo(() => items.filter((p) => {
     if (statusFilter !== "all" && p.status !== statusFilter) return false;
@@ -44,8 +59,20 @@ export default function StaffProperties() {
   }), [items, search, statusFilter]);
 
   const setStatus = (id: string, status: StaffProperty["status"]) => {
+    const prop = items.find((x) => x.id === id);
     setItems((p) => p.map((x) => (x.id === id ? { ...x, status } : x)));
     toast.success(`Property ${id} ${status}`);
+    if (prop) {
+      const kind = status === "approved" ? "approval" : status === "rejected" ? "rejection" : "property";
+      pushNotification({
+        kind,
+        title: `Property ${status}`,
+        description: `${prop.name} (${id})`,
+        targetTab: "properties",
+        recordId: id,
+        severity: status === "rejected" ? "warning" : status === "flagged" ? "warning" : "info",
+      });
+    }
   };
 
   const startEdit = (p: StaffProperty) => { setEditing(p); setDraft({ ...p }); };
@@ -63,10 +90,18 @@ export default function StaffProperties() {
     setConfirmDelete(null);
   };
 
-  const exportItems = () => {
-    downloadCSV("properties.csv", filtered);
-    toast.success(`Exported ${filtered.length} properties`);
-  };
+  const exportFields: ExportField[] = [
+    { key: "id", label: "ID", default: true },
+    { key: "name", label: "Property", default: true },
+    { key: "partner", label: "Partner", default: true },
+    { key: "city", label: "City", default: true },
+    { key: "country", label: "Country", default: true },
+    { key: "rooms", label: "Rooms", default: true },
+    { key: "rating", label: "Rating" },
+    { key: "status", label: "Status", default: true },
+    { key: "submittedAt", label: "Submitted" },
+  ];
+
 
   return (
     <div className="space-y-4 sm:space-y-5">
