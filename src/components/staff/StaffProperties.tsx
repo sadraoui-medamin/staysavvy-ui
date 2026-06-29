@@ -14,7 +14,7 @@ import {
 import { mockProperties, type StaffProperty } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
 import { useStaffStore } from "@/lib/staffSupport";
-import { downloadCSV } from "@/lib/staffExport";
+
 import { ExportReportDialog, type ExportField } from "@/components/staff/ExportReportDialog";
 import { toast } from "sonner";
 
