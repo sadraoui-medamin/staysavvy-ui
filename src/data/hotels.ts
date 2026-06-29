@@ -342,6 +342,17 @@ export const hotels: Hotel[] = [
   },
 ];
 
+// ─── Subscription tiers ──────────────────────────────────────────────
+// Enterprise = top-tier sponsored hotels shown in the home banner.
+// Pro        = priority placement in the Featured Hotels section.
+const TIERS: Record<string, SubscriptionTier> = {
+  "1": "enterprise", "3": "enterprise", "9": "enterprise",
+  "2": "pro", "4": "pro", "7": "pro", "12": "pro",
+};
+hotels.forEach((h) => { h.subscriptionTier = TIERS[h.id] ?? "standard"; });
+
+
+
 export const myBookings: Booking[] = [
   {
     id: "b1",
