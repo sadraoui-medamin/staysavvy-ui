@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Filter, CheckCircle2, XCircle, Flag, Eye, Download, Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { mockProperties, type StaffProperty } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
+import { useStaffStore } from "@/lib/staffSupport";
 import { downloadCSV } from "@/lib/staffExport";
+import { ExportReportDialog, type ExportField } from "@/components/staff/ExportReportDialog";
 import { toast } from "sonner";
+
 
 const statusStyles: Record<string, string> = {
   approved: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30",
