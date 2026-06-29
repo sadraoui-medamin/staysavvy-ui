@@ -166,8 +166,10 @@ export type Notification = {
   at: string; // ISO
   read: boolean;
   targetTab?: string;     // staff tab to deep-link to
+  recordId?: string;      // record id to focus (booking/property/ticket)
   severity?: "info" | "warning" | "critical";
 };
+
 
 export const NOTIFICATION_STYLES: Record<NotificationKind, { label: string; chip: string; dot: string }> = {
   property: { label: "Property",  chip: "bg-blue-500/10 text-blue-600 border-blue-500/30",       dot: "bg-blue-500" },
