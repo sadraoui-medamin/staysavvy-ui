@@ -194,6 +194,7 @@ const seedNotifications: Notification[] = [
 type Store = {
   tickets: Ticket[];
   notifications: Notification[];
+  focusRef: string | null;
   addReply: (ticketId: string, body: string, author: { name: string; email: string }) => void;
   setStatus: (ticketId: string, status: TicketStatus) => void;
   setPriority: (ticketId: string, priority: TicketPriority) => void;
@@ -201,7 +202,9 @@ type Store = {
   markRead: (id: string) => void;
   markAllRead: () => void;
   clearAll: () => void;
+  setFocusRef: (ref: string | null) => void;
 };
+
 
 const nid = () => `N-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
 
