@@ -277,6 +277,3 @@ export function fieldsFromSample<T extends Record<string, unknown>>(sample: T, l
   }));
 }
 
-// Re-export for convenience (data preview helper not exposed today).
-void buildRowsTypeFix;
-function buildRowsTypeFix() { /* placeholder to keep lint quiet */ }
