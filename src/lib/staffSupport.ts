@@ -156,6 +156,8 @@ export type NotificationKind =
   | "booking"
   | "refund"
   | "dispute"
+  | "approval"
+  | "rejection"
   | "log";
 
 export type Notification = {
@@ -165,19 +167,22 @@ export type Notification = {
   description: string;
   at: string; // ISO
   read: boolean;
-  targetTab?: string;     // staff tab to deep-link to
-  recordId?: string;      // record id to focus (booking/property/ticket)
+  targetTab?: string;
+  recordId?: string;
   severity?: "info" | "warning" | "critical";
 };
 
 
 export const NOTIFICATION_STYLES: Record<NotificationKind, { label: string; chip: string; dot: string }> = {
-  property: { label: "Property",  chip: "bg-blue-500/10 text-blue-600 border-blue-500/30",       dot: "bg-blue-500" },
-  booking:  { label: "Booking",   chip: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30", dot: "bg-emerald-500" },
-  refund:   { label: "Refund",    chip: "bg-amber-500/10 text-amber-600 border-amber-500/30",    dot: "bg-amber-500" },
-  dispute:  { label: "Dispute",   chip: "bg-destructive/10 text-destructive border-destructive/30", dot: "bg-destructive" },
-  log:      { label: "System",    chip: "bg-muted text-foreground/70 border-border",             dot: "bg-foreground/40" },
+  property:  { label: "Property",  chip: "bg-blue-500/10 text-blue-600 border-blue-500/30",          dot: "bg-blue-500" },
+  booking:   { label: "Booking",   chip: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30", dot: "bg-emerald-500" },
+  refund:    { label: "Refund",    chip: "bg-amber-500/10 text-amber-600 border-amber-500/30",      dot: "bg-amber-500" },
+  dispute:   { label: "Dispute",   chip: "bg-destructive/10 text-destructive border-destructive/30", dot: "bg-destructive" },
+  approval:  { label: "Approval",  chip: "bg-emerald-500/10 text-emerald-600 border-emerald-500/30", dot: "bg-emerald-500" },
+  rejection: { label: "Rejection", chip: "bg-destructive/10 text-destructive border-destructive/30", dot: "bg-destructive" },
+  log:       { label: "System",    chip: "bg-muted text-foreground/70 border-border",                dot: "bg-foreground/40" },
 };
+
 
 const seedNotifications: Notification[] = [
   { id: "N-9001", kind: "dispute",  title: "New refund dispute opened",  description: "Sofia Martinez · BK-9003",                     at: "2026-06-22T09:05:00Z", read: false, targetTab: "support", severity: "warning" },
