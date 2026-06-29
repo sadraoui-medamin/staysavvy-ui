@@ -110,7 +110,7 @@ export default function StaffProperties() {
           <h1 className="text-xl sm:text-2xl font-display font-bold">Properties Moderation</h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">Review submissions, flag issues, and curate the catalog.</p>
         </div>
-        <Button size="sm" variant="outline" onClick={exportItems}><Download size={14} className="mr-1.5" /> Export</Button>
+        <Button size="sm" variant="outline" onClick={() => setExportOpen(true)}><Download size={14} className="mr-1.5" /> Export</Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">
