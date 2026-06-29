@@ -87,14 +87,8 @@ export function ExportReportDialog<T extends Record<string, unknown>>({
     setTemplate("custom");
   };
 
-  const buildRows = () => {
-    const cols = fields.filter((f) => selected.has(f.key));
-    return filtered.map((r) => {
-      const o: Record<string, unknown> = {};
-      cols.forEach((c) => { o[c.label] = r[c.key as keyof T]; });
-      return o;
-    });
-  };
+
+
 
   const handleExport = () => {
     if (selected.size === 0) {
