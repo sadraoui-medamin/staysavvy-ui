@@ -242,7 +242,27 @@ export default function StaffProperties() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ExportReportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        title="Export properties report"
+        fileBase="properties"
+        fields={exportFields}
+        data={filtered as unknown as Record<string, unknown>[]}
+        dateKey="submittedAt"
+        groupOptions={[
+          { key: "status",  label: "Status" },
+          { key: "country", label: "Country" },
+          { key: "partner", label: "Partner" },
+        ]}
+        templates={[
+          { key: "summary",  label: "Summary",  fields: ["id", "name", "status", "partner"] },
+          { key: "detailed", label: "Detailed", fields: exportFields.map((f) => f.key) },
+        ]}
+      />
     </div>
+
   );
 }
 
