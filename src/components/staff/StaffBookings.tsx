@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { mockStaffBookings, type StaffBooking } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
+import { useStaffStore } from "@/lib/staffSupport";
+
 import { downloadCSV } from "@/lib/staffExport";
 import { toast } from "sonner";
 
