@@ -54,6 +54,7 @@ export default function Dashboard() {
   const [cancelStep, setCancelStep] = useState<CancelStep>("confirm");
   const [cancelReason, setCancelReason] = useState("");
   const [refundProcessing, setRefundProcessing] = useState(false);
+  const [viewBooking, setViewBooking] = useState<Booking | null>(null);
 
   const cancelTarget = bookings.find((b) => b.id === cancelBookingId);
 
@@ -279,7 +280,7 @@ export default function Dashboard() {
                               )}
                             </div>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => navigate(`/hotel/${booking.id}`)}>
+                              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => setViewBooking(booking)}>
                                 <Eye size={14} /> View
                               </Button>
                               {(booking.status === "upcoming" || booking.status === "confirmed") && (
@@ -465,6 +466,66 @@ export default function Dashboard() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* View Booking Details Dialog */}
+      <Dialog open={!!viewBooking} onOpenChange={(o) => !o && setViewBooking(null)}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          {viewBooking && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Booking Details</DialogTitle>
+                <DialogDescription>Full information about your reservation.</DialogDescription>
+              </DialogHeader>
+              <img src={viewBooking.image} alt={viewBooking.hotelName} className="w-full h-44 object-cover rounded-lg" />
+              <div className="space-y-3">
+                <div>
+                  <h3 className="font-semibold text-lg text-foreground">{viewBooking.hotelName}</h3>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1"><MapPin size={14} /> {viewBooking.location}</p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${statusColors[viewBooking.status]}`}>{viewBooking.status}</span>
+                  {viewBooking.confirmationCode && (
+                    <Badge variant="outline" className="text-xs font-mono">{viewBooking.confirmationCode}</Badge>
+                  )}
+                </div>
+                <div className="bg-muted/50 rounded-lg p-4 space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Check-in</span><span className="text-foreground font-medium">{viewBooking.checkIn}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Check-out</span><span className="text-foreground font-medium">{viewBooking.checkOut}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Guests</span><span className="text-foreground font-medium">{viewBooking.guests}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Rooms</span><span className="text-foreground font-medium">{viewBooking.rooms}</span></div>
+                  {viewBooking.paymentMethod && (
+                    <div className="flex justify-between"><span className="text-muted-foreground">Payment</span><span className="text-foreground font-medium flex items-center gap-1"><CreditCard size={12} /> {viewBooking.paymentMethod}</span></div>
+                  )}
+                  <hr className="border-border" />
+                  <div className="flex justify-between font-semibold"><span className="text-foreground">Total</span><span className="text-accent text-base">${viewBooking.total}</span></div>
+                </div>
+                {viewBooking.refundStatus && viewBooking.refundStatus !== "none" && (
+                  <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 text-sm">
+                    <p className="font-medium text-foreground flex items-center gap-1.5">
+                      {viewBooking.refundStatus === "processed" ? <CheckCircle size={14} className="text-accent" /> : <RotateCcw size={14} className="text-accent" />}
+                      Refund {viewBooking.refundStatus}
+                    </p>
+                    {viewBooking.refundAmount !== undefined && (
+                      <p className="text-xs text-muted-foreground mt-1">Amount: ${viewBooking.refundAmount}</p>
+                    )}
+                    {viewBooking.cancelledAt && (
+                      <p className="text-xs text-muted-foreground">Cancelled: {new Date(viewBooking.cancelledAt).toLocaleString()}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <DialogFooter className="gap-2">
+                <Button variant="outline" onClick={() => setViewBooking(null)}>Close</Button>
+                <Button className="bg-accent text-accent-foreground hover:bg-gold-light" onClick={() => { setViewBooking(null); navigate(`/hotel/${viewBooking.id}`); }}>
+                  View Hotel Page
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+
 
       <Footer />
     </div>

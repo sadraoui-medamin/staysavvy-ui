@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import {
   UtensilsCrossed, Wrench, Sparkles, ShieldCheck, Phone,
   Plus, Clock, CheckCircle, AlertCircle, Loader2, Search,
-  KeyRound, LogOut,
+  KeyRound, LogOut, Eye, Pencil, XCircle,
 } from "lucide-react";
 
 type ServiceCategory = "food" | "maintenance" | "housekeeping" | "concierge" | "other";
@@ -63,6 +63,9 @@ const GuestServices = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newPriority, setNewPriority] = useState<"low" | "medium" | "high">("medium");
+  const [viewRequest, setViewRequest] = useState<ServiceRequest | null>(null);
+  const [editRequest, setEditRequest] = useState<ServiceRequest | null>(null);
+  const [cancelRequest, setCancelRequest] = useState<ServiceRequest | null>(null);
 
   // Simulate key validation
   const handleKeySubmit = () => {
@@ -252,6 +255,21 @@ const GuestServices = () => {
                         <span className="text-[10px] text-muted-foreground">{req.createdAt}</span>
                       </div>
                     </div>
+                    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border/50">
+                      <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 rounded-lg" onClick={() => setViewRequest(req)}>
+                        <Eye size={13} /> View
+                      </Button>
+                      {(req.status === "pending" || req.status === "in_progress") && (
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 rounded-lg" onClick={() => setEditRequest(req)}>
+                          <Pencil size={13} /> Edit
+                        </Button>
+                      )}
+                      {(req.status === "pending" || req.status === "in_progress") && (
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setCancelRequest(req)}>
+                          <XCircle size={13} /> Cancel
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 );
               })
@@ -322,6 +340,171 @@ const GuestServices = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* View Request Dialog */}
+      <Dialog open={!!viewRequest} onOpenChange={(o) => !o && setViewRequest(null)}>
+        <DialogContent className="rounded-2xl max-w-md">
+          <DialogHeader>
+            <DialogTitle>Request Details</DialogTitle>
+          </DialogHeader>
+          {viewRequest && (() => {
+            const cat = categoryInfo[viewRequest.category];
+            const stat = statusInfo[viewRequest.status];
+            const CatIcon = cat.icon;
+            const StatIcon = stat.icon;
+            return (
+              <div className="space-y-4 text-sm">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${cat.color}`}>
+                    <CatIcon size={20} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">{viewRequest.title}</p>
+                    <p className="text-xs text-muted-foreground">{cat.label} · {viewRequest.id}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Status</p>
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 mt-1 rounded-md text-xs font-medium ${stat.color}`}>
+                      <StatIcon size={12} /> {stat.label}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Priority</p>
+                    <p className="font-medium capitalize mt-1">{viewRequest.priority}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Room</p>
+                    <p className="font-medium mt-1">{viewRequest.room}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Created</p>
+                    <p className="font-medium mt-1">{viewRequest.createdAt}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Description</p>
+                  <p className="text-foreground bg-muted/40 rounded-lg p-3">{viewRequest.description || "No additional details."}</p>
+                </div>
+              </div>
+            );
+          })()}
+          <DialogFooter>
+            <Button variant="outline" className="rounded-xl" onClick={() => setViewRequest(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Request Dialog */}
+      <Dialog open={!!editRequest} onOpenChange={(o) => !o && setEditRequest(null)}>
+        <DialogContent className="rounded-2xl max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Update Request</DialogTitle>
+          </DialogHeader>
+          {editRequest && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">Category</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {(Object.keys(categoryInfo) as ServiceCategory[]).map(cat => {
+                    const c = categoryInfo[cat];
+                    const Icon = c.icon;
+                    return (
+                      <button
+                        key={cat}
+                        onClick={() => setEditRequest({ ...editRequest, category: cat })}
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium border transition-all ${
+                          editRequest.category === cat ? "border-accent bg-accent/5 text-accent" : "border-border/50 text-muted-foreground hover:bg-muted/40"
+                        }`}
+                      >
+                        <Icon size={14} /> {c.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">Title</label>
+                <Input value={editRequest.title} onChange={e => setEditRequest({ ...editRequest, title: e.target.value })} className="h-11" />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">Details</label>
+                <textarea
+                  value={editRequest.description}
+                  onChange={e => setEditRequest({ ...editRequest, description: e.target.value })}
+                  className="w-full min-h-[80px] px-3 py-2 rounded-xl border border-border bg-background text-foreground text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-1.5 block">Priority</label>
+                <div className="flex gap-2">
+                  {(["low", "medium", "high"] as const).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setEditRequest({ ...editRequest, priority: p })}
+                      className={`px-4 py-2 rounded-lg text-xs font-medium capitalize border transition-all ${
+                        editRequest.priority === p ? "border-accent bg-accent/5 text-accent" : "border-border/50 text-muted-foreground hover:bg-muted/40"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" className="rounded-xl" onClick={() => setEditRequest(null)}>Cancel</Button>
+            <Button
+              className="rounded-xl bg-accent text-accent-foreground hover:bg-gold-light"
+              onClick={() => {
+                if (!editRequest) return;
+                setRequests(prev => prev.map(r => r.id === editRequest.id ? editRequest : r));
+                setEditRequest(null);
+              }}
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Request Dialog */}
+      <Dialog open={!!cancelRequest} onOpenChange={(o) => !o && setCancelRequest(null)}>
+        <DialogContent className="rounded-2xl max-w-md">
+          <DialogHeader>
+            <DialogTitle>Cancel Request?</DialogTitle>
+          </DialogHeader>
+          {cancelRequest && (
+            <div className="space-y-3 text-sm">
+              <p className="text-muted-foreground">
+                Are you sure you want to cancel <span className="font-medium text-foreground">{cancelRequest.title}</span>? This action cannot be undone.
+              </p>
+              <div className="bg-muted/40 rounded-lg p-3 text-xs">
+                <p><span className="text-muted-foreground">Request ID:</span> {cancelRequest.id}</p>
+                <p><span className="text-muted-foreground">Status:</span> {statusInfo[cancelRequest.status].label}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" className="rounded-xl" onClick={() => setCancelRequest(null)}>Keep Request</Button>
+            <Button
+              variant="destructive"
+              className="rounded-xl"
+              onClick={() => {
+                if (!cancelRequest) return;
+                setRequests(prev => prev.map(r => r.id === cancelRequest.id ? { ...r, status: "cancelled" as RequestStatus } : r));
+                setCancelRequest(null);
+              }}
+            >
+              Cancel Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
 
       <Footer />
     </div>
