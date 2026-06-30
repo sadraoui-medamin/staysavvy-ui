@@ -8,9 +8,12 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import {
   UtensilsCrossed, Wrench, Sparkles, ShieldCheck, Phone,
   Plus, Clock, CheckCircle, AlertCircle, Loader2, Search,
-  KeyRound, LogOut,
+  KeyRound, LogOut, Eye, Pencil, XCircle,
 } from "lucide-react";
 
 type ServiceCategory = "food" | "maintenance" | "housekeeping" | "concierge" | "other";
