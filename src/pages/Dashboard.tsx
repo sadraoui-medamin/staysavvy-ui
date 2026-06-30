@@ -280,7 +280,7 @@ export default function Dashboard() {
                               )}
                             </div>
                             <div className="flex gap-2">
-                              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => navigate(`/hotel/${booking.id}`)}>
+                              <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={() => setViewBooking(booking)}>
                                 <Eye size={14} /> View
                               </Button>
                               {(booking.status === "upcoming" || booking.status === "confirmed") && (
