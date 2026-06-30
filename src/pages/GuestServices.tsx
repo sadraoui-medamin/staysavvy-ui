@@ -63,6 +63,9 @@ const GuestServices = () => {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newPriority, setNewPriority] = useState<"low" | "medium" | "high">("medium");
+  const [viewRequest, setViewRequest] = useState<ServiceRequest | null>(null);
+  const [editRequest, setEditRequest] = useState<ServiceRequest | null>(null);
+  const [cancelRequest, setCancelRequest] = useState<ServiceRequest | null>(null);
 
   // Simulate key validation
   const handleKeySubmit = () => {
