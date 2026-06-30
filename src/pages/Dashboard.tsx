@@ -54,6 +54,7 @@ export default function Dashboard() {
   const [cancelStep, setCancelStep] = useState<CancelStep>("confirm");
   const [cancelReason, setCancelReason] = useState("");
   const [refundProcessing, setRefundProcessing] = useState(false);
+  const [viewBooking, setViewBooking] = useState<Booking | null>(null);
 
   const cancelTarget = bookings.find((b) => b.id === cancelBookingId);
 
