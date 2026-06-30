@@ -255,6 +255,21 @@ const GuestServices = () => {
                         <span className="text-[10px] text-muted-foreground">{req.createdAt}</span>
                       </div>
                     </div>
+                    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-border/50">
+                      <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 rounded-lg" onClick={() => setViewRequest(req)}>
+                        <Eye size={13} /> View
+                      </Button>
+                      {(req.status === "pending" || req.status === "in_progress") && (
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 rounded-lg" onClick={() => setEditRequest(req)}>
+                          <Pencil size={13} /> Edit
+                        </Button>
+                      )}
+                      {(req.status === "pending" || req.status === "in_progress") && (
+                        <Button size="sm" variant="outline" className="gap-1.5 text-xs h-8 rounded-lg text-destructive border-destructive/30 hover:bg-destructive/5" onClick={() => setCancelRequest(req)}>
+                          <XCircle size={13} /> Cancel
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 );
               })
