@@ -45,8 +45,24 @@ const Index = () => {
   }, [nextSlide]);
 
   const handleSearch = () => {
-    navigate(`/search?q=${encodeURIComponent(destination)}`);
+    const params = new URLSearchParams();
+    if (destination) params.set("q", destination);
+    if (dateRange?.from) params.set("checkin", format(dateRange.from, "yyyy-MM-dd"));
+    if (dateRange?.to) params.set("checkout", format(dateRange.to, "yyyy-MM-dd"));
+    params.set("adults", String(guests.adults));
+    params.set("children", String(guests.children));
+    params.set("rooms", String(guests.rooms));
+    navigate(`/search?${params.toString()}`);
   };
+
+  const guestSummary = `${guests.adults + guests.children} Guest${guests.adults + guests.children !== 1 ? "s" : ""}, ${guests.rooms} Room${guests.rooms !== 1 ? "s" : ""}`;
+  const dateSummary =
+    dateRange?.from && dateRange?.to
+      ? `${format(dateRange.from, "MMM d")} — ${format(dateRange.to, "MMM d")}`
+      : dateRange?.from
+        ? `${format(dateRange.from, "MMM d")} — …`
+        : "";
+
 
   return (
     <div className="min-h-screen bg-background">
