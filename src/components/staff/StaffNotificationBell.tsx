@@ -97,6 +97,16 @@ export default function StaffNotificationBell({ onOpenTab }: Props) {
             );
           })}
         </div>
+        <div className="border-t border-border/70 bg-muted/20 p-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full h-8 text-xs justify-center"
+            onClick={() => onOpenTab("notifications")}
+          >
+            View all notifications
+          </Button>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
