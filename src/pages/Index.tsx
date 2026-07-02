@@ -26,6 +26,8 @@ const heroImages = [heroImg, dest1, hotel1, dest3, hotel2];
 const Index = () => {
   const navigate = useNavigate();
   const [destination, setDestination] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [guests, setGuests] = useState({ adults: 2, children: 0, rooms: 1 });
   const [currentHero, setCurrentHero] = useState(0);
   const [fadeClass, setFadeClass] = useState("opacity-100");
 
