@@ -42,6 +42,7 @@ const NAV: NavItem[] = [
   { key: "revenue",    label: "Revenue & Pricing", icon: Percent,          perm: "revenue.view" },
   { key: "support",    label: "Support & Disputes",icon: LifeBuoy,         perm: "support.view" },
   { key: "reports",    label: "Reports & Logs",    icon: BarChart3,        perm: "reports.view" },
+  { key: "notifications", label: "Notifications",   icon: Inbox,            perm: "notifications.view" },
   { key: "team",       label: "Staff & Roles",     icon: ShieldCheck,      perm: "team.view" },
 ];
 
