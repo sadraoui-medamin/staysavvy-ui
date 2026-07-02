@@ -154,7 +154,7 @@ export function SearchAutocomplete({ variant = "hero", onSearch, defaultValue = 
       <Input
         ref={inputRef}
         placeholder="Search hotels, destinations, categories..."
-        className={`pl-10 ${isPage ? "h-11 pr-9" : "h-13"} bg-muted/50 border-0 text-foreground rounded-xl text-sm`}
+        className={`pl-10 ${isPage ? "h-11 pr-9" : "h-12"} bg-muted/50 border-0 text-foreground rounded-xl text-sm w-full`}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);

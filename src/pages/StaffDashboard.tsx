@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, CalendarCheck, BarChart3, Wallet, ShieldCheck,
   LogOut, Menu, X, Moon, Sun, Shield, ChevronDown, Sparkles, ArrowLeftRight,
-  LifeBuoy, Percent,
+  LifeBuoy, Percent, Inbox,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ import StaffFinance from "@/components/staff/StaffFinance";
 import StaffTeam from "@/components/staff/StaffTeam";
 import StaffSupport from "@/components/staff/StaffSupport";
 import StaffRevenue from "@/components/staff/StaffRevenue";
+import StaffNotifications from "@/components/staff/StaffNotifications";
 import StaffNotificationBell from "@/components/staff/StaffNotificationBell";
 import {
   ROLES, ROLE_LIST, STAFF_DIRECTORY, StaffAuthContext, loadIdentity, saveIdentity,
@@ -41,6 +42,7 @@ const NAV: NavItem[] = [
   { key: "revenue",    label: "Revenue & Pricing", icon: Percent,          perm: "revenue.view" },
   { key: "support",    label: "Support & Disputes",icon: LifeBuoy,         perm: "support.view" },
   { key: "reports",    label: "Reports & Logs",    icon: BarChart3,        perm: "reports.view" },
+  { key: "notifications", label: "Notifications",   icon: Inbox,            perm: "notifications.view" },
   { key: "team",       label: "Staff & Roles",     icon: ShieldCheck,      perm: "team.view" },
 ];
 
@@ -84,6 +86,7 @@ const StaffDashboard = () => {
       case "revenue":    return can("revenue.view")    ? <StaffRevenue />    : null;
       case "support":    return can("support.view")    ? <StaffSupport />    : null;
       case "reports":    return can("reports.view")    ? <StaffReports />    : null;
+      case "notifications": return can("notifications.view") ? <StaffNotifications onOpenTab={setActiveTab} /> : null;
       case "team":       return can("team.view")       ? <StaffTeam />       : null;
       default: return null;
     }

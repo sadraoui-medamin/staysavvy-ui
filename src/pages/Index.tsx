@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, CalendarDays, Users, MapPin, Play } from "lucide-react";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import { Search, CalendarDays, Users, Play, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchAutocomplete } from "@/components/SearchAutocomplete";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -23,6 +26,8 @@ const heroImages = [heroImg, dest1, hotel1, dest3, hotel2];
 const Index = () => {
   const navigate = useNavigate();
   const [destination, setDestination] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [guests, setGuests] = useState({ adults: 2, children: 0, rooms: 1 });
   const [currentHero, setCurrentHero] = useState(0);
   const [fadeClass, setFadeClass] = useState("opacity-100");
 
@@ -40,8 +45,24 @@ const Index = () => {
   }, [nextSlide]);
 
   const handleSearch = () => {
-    navigate(`/search?q=${encodeURIComponent(destination)}`);
+    const params = new URLSearchParams();
+    if (destination) params.set("q", destination);
+    if (dateRange?.from) params.set("checkin", format(dateRange.from, "yyyy-MM-dd"));
+    if (dateRange?.to) params.set("checkout", format(dateRange.to, "yyyy-MM-dd"));
+    params.set("adults", String(guests.adults));
+    params.set("children", String(guests.children));
+    params.set("rooms", String(guests.rooms));
+    navigate(`/search?${params.toString()}`);
   };
+
+  const guestSummary = `${guests.adults + guests.children} Guest${guests.adults + guests.children !== 1 ? "s" : ""}, ${guests.rooms} Room${guests.rooms !== 1 ? "s" : ""}`;
+  const dateSummary =
+    dateRange?.from && dateRange?.to
+      ? `${format(dateRange.from, "MMM d")} — ${format(dateRange.to, "MMM d")}`
+      : dateRange?.from
+        ? `${format(dateRange.from, "MMM d")} — …`
+        : "";
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,25 +111,90 @@ const Index = () => {
             style={{ animationDelay: "0.2s" }}
           >
             <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_1fr_auto] gap-3">
-              <SearchAutocomplete />
-              <div className="relative">
-                <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
-                <Input
-                  type="text"
-                  placeholder="Check-in — Check-out"
-                  className="pl-10 h-13 bg-muted/50 border-0 rounded-xl text-sm"
-                />
-              </div>
-              <div className="relative">
-                <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
-                <Input
-                  type="text"
-                  placeholder="2 Guests, 1 Room"
-                  className="pl-10 h-13 bg-muted/50 border-0 rounded-xl text-sm"
-                />
-              </div>
+              <SearchAutocomplete
+                defaultValue={destination}
+                onSearch={(q) => setDestination(q)}
+              />
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="relative flex items-center h-12 pl-10 pr-3 bg-muted/50 rounded-xl text-sm text-left hover:bg-muted/70 transition-colors"
+                  >
+                    <CalendarDays className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
+                    <span className={dateSummary ? "text-foreground" : "text-muted-foreground"}>
+                      {dateSummary || "Check-in — Check-out"}
+                    </span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 pointer-events-auto" align="start">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                    initialFocus
+                    disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    className="relative flex items-center h-12 pl-10 pr-3 bg-muted/50 rounded-xl text-sm text-left hover:bg-muted/70 transition-colors"
+                  >
+                    <Users className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={17} />
+                    <span className="truncate">{guestSummary}</span>
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 p-4 space-y-3" align="start">
+                  {(
+                    [
+                      { key: "adults", label: "Adults", sub: "Ages 13+", min: 1 },
+                      { key: "children", label: "Children", sub: "Ages 2-12", min: 0 },
+                      { key: "rooms", label: "Rooms", sub: "", min: 1 },
+                    ] as const
+                  ).map((row) => (
+                    <div key={row.key} className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-medium">{row.label}</div>
+                        {row.sub && <div className="text-xs text-muted-foreground">{row.sub}</div>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() =>
+                            setGuests((g) => ({ ...g, [row.key]: Math.max(row.min, g[row.key] - 1) }))
+                          }
+                          disabled={guests[row.key] <= row.min}
+                        >
+                          <Minus size={14} />
+                        </Button>
+                        <span className="w-6 text-center text-sm font-medium">{guests[row.key]}</span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => setGuests((g) => ({ ...g, [row.key]: g[row.key] + 1 }))}
+                        >
+                          <Plus size={14} />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </PopoverContent>
+              </Popover>
+
               <Button
-                className="h-13 px-8 bg-accent text-accent-foreground hover:bg-gold-light font-semibold rounded-xl text-sm"
+                className="h-12 px-8 bg-accent text-accent-foreground hover:bg-gold-light font-semibold rounded-xl text-sm"
                 onClick={handleSearch}
               >
                 <Search size={17} className="mr-2" />
