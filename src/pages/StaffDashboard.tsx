@@ -86,6 +86,7 @@ const StaffDashboard = () => {
       case "revenue":    return can("revenue.view")    ? <StaffRevenue />    : null;
       case "support":    return can("support.view")    ? <StaffSupport />    : null;
       case "reports":    return can("reports.view")    ? <StaffReports />    : null;
+      case "notifications": return can("notifications.view") ? <StaffNotifications onOpenTab={setActiveTab} /> : null;
       case "team":       return can("team.view")       ? <StaffTeam />       : null;
       default: return null;
     }
