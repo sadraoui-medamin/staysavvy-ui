@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, Building2, CalendarCheck, BarChart3, Wallet, ShieldCheck,
   LogOut, Menu, X, Moon, Sun, Shield, ChevronDown, Sparkles, ArrowLeftRight,
-  LifeBuoy, Percent,
+  LifeBuoy, Percent, Inbox,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
