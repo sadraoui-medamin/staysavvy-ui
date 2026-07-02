@@ -24,6 +24,7 @@ import StaffFinance from "@/components/staff/StaffFinance";
 import StaffTeam from "@/components/staff/StaffTeam";
 import StaffSupport from "@/components/staff/StaffSupport";
 import StaffRevenue from "@/components/staff/StaffRevenue";
+import StaffNotifications from "@/components/staff/StaffNotifications";
 import StaffNotificationBell from "@/components/staff/StaffNotificationBell";
 import {
   ROLES, ROLE_LIST, STAFF_DIRECTORY, StaffAuthContext, loadIdentity, saveIdentity,
