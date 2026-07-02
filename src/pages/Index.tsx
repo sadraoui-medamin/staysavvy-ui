@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, CalendarDays, Users, MapPin, Play } from "lucide-react";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
+import { Search, CalendarDays, Users, Play, Minus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { SearchAutocomplete } from "@/components/SearchAutocomplete";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
