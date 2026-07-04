@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { revenueSeries, staffKPIs } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
-import { downloadCSV } from "@/lib/staffExport";
+import { ExportReportDialog, type ExportField } from "@/components/staff/ExportReportDialog";
 import { toast } from "sonner";
 
 type Payout = { id: string; partner: string; amount: number; status: "pending" | "released" | "scheduled"; date: string };
