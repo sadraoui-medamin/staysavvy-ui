@@ -95,6 +95,22 @@ export default function StaffUsers() {
         </div>
       </div>
 
+      {/* KPI cards */}
+      {(() => {
+        const clients = users.filter((u) => u.type === "client").length;
+        const partners = users.filter((u) => u.type === "partner").length;
+        const active = users.filter((u) => u.status === "active").length;
+        const pending = users.filter((u) => u.status === "pending").length;
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label="Total accounts" value={users.length} delta={8.7} icon={Users} tone="accent" series={analyticsSeries.map((a) => ({ v: a.users + a.partners }))} />
+            <StatCard label="Clients" value={clients} delta={9.1} icon={UserCheck} tone="success" series={analyticsSeries.map((a) => ({ v: a.users }))} />
+            <StatCard label="Partners" value={partners} delta={5.4} icon={Briefcase} tone="default" series={analyticsSeries.map((a) => ({ v: a.partners }))} />
+            <StatCard label="Pending approval" value={pending} hint={`${active} active`} icon={Clock} tone="warning" series={analyticsSeries.map((a) => ({ v: Math.round(a.partners * 0.15) }))} />
+          </div>
+        );
+      })()}
+
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
