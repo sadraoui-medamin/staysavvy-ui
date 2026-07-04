@@ -147,6 +147,27 @@ export default function StaffFinance() {
           ))}
         </div>
       </div>
+
+      <ExportReportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        title={exportKind === "revenue" ? "Export revenue report" : "Export payouts report"}
+        fileBase={exportKind === "revenue" ? "revenue-ledger" : "payouts"}
+        fields={exportKind === "revenue" ? revenueFields : payoutFields}
+        data={(exportKind === "revenue" ? revenueSeries : payouts) as unknown as Record<string, unknown>[]}
+        dateKey={exportKind === "payouts" ? "date" : undefined}
+        groupOptions={exportKind === "payouts" ? [
+          { key: "status",  label: "Status" },
+          { key: "partner", label: "Partner" },
+        ] : undefined}
+        templates={exportKind === "revenue" ? [
+          { key: "summary",  label: "Summary",  fields: ["month", "revenue"] },
+          { key: "detailed", label: "Detailed", fields: revenueFields.map((f) => f.key) },
+        ] : [
+          { key: "summary",  label: "Summary",  fields: ["id", "partner", "amount", "status"] },
+          { key: "detailed", label: "Detailed", fields: payoutFields.map((f) => f.key) },
+        ]}
+      />
     </div>
   );
 }
