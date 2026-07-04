@@ -106,3 +106,20 @@ export const revenueSeries = [
   { month: "May", revenue: 442000, bookings: 880 },
   { month: "Jun", revenue: 482300, bookings: 943 },
 ];
+
+// Cross-domain analytics used by Reports & Overview stat cards.
+export const analyticsSeries = [
+  { month: "Jan", users: 8420, partners: 231, properties: 980, bookings: 612, refunds: 18, logs: 640, feedback: 120, disputes: 6 },
+  { month: "Feb", users: 9210, partners: 248, properties: 1024, bookings: 701, refunds: 22, logs: 712, feedback: 148, disputes: 8 },
+  { month: "Mar", users: 10120, partners: 267, properties: 1102, bookings: 798, refunds: 27, logs: 802, feedback: 172, disputes: 10 },
+  { month: "Apr", users: 10940, partners: 281, properties: 1168, bookings: 770, refunds: 24, logs: 861, feedback: 190, disputes: 9 },
+  { month: "May", users: 11820, partners: 297, properties: 1224, bookings: 880, refunds: 30, logs: 910, feedback: 218, disputes: 12 },
+  { month: "Jun", users: 12847, partners: 312, properties: 1284, bookings: 943, refunds: 34, logs: 980, feedback: 246, disputes: 14 },
+];
+
+// Category distribution used by the Reports feedback tile.
+export const feedbackBreakdown = [
+  { name: "Positive", value: 148, color: "hsl(142 71% 45%)" },
+  { name: "Neutral",  value: 62,  color: "hsl(48 96% 53%)" },
+  { name: "Negative", value: 36,  color: "hsl(0 84% 60%)" },
+];
