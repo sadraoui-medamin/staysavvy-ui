@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, CheckCircle2, XCircle, Flag, Eye, Download, Pencil, Trash2 } from "lucide-react";
+import { Search, Filter, CheckCircle2, XCircle, Flag, Eye, Download, Pencil, Trash2, Building2, Clock, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +11,13 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { mockProperties, type StaffProperty } from "@/lib/staffMockData";
+import { mockProperties, analyticsSeries, type StaffProperty } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
 import { useStaffStore } from "@/lib/staffSupport";
-
+import StatCard from "@/components/staff/StatCard";
 import { ExportReportDialog, type ExportField } from "@/components/staff/ExportReportDialog";
 import { toast } from "sonner";
+
 
 
 const statusStyles: Record<string, string> = {
