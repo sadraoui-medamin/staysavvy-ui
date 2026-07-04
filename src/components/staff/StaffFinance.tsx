@@ -27,6 +27,22 @@ const statusStyles: Record<Payout["status"], string> = {
 export default function StaffFinance() {
   const { can } = useStaffAuth();
   const [payouts, setPayouts] = useState<Payout[]>(initialPayouts);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportKind, setExportKind] = useState<"revenue" | "payouts">("revenue");
+  const openExport = (kind: "revenue" | "payouts") => { setExportKind(kind); setExportOpen(true); };
+
+  const revenueFields: ExportField[] = [
+    { key: "month",    label: "Month",    default: true },
+    { key: "revenue",  label: "Revenue",  default: true },
+    { key: "bookings", label: "Bookings", default: true },
+  ];
+  const payoutFields: ExportField[] = [
+    { key: "id",      label: "ID",      default: true },
+    { key: "partner", label: "Partner", default: true },
+    { key: "amount",  label: "Amount",  default: true },
+    { key: "status",  label: "Status",  default: true },
+    { key: "date",    label: "Date",    default: true },
+  ];
 
   const release = (id: string) => {
     setPayouts((p) => p.map((x) => (x.id === id ? { ...x, status: "released" } : x)));
