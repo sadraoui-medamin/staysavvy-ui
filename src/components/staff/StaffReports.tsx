@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Filter, Download, ShieldAlert, TrendingUp } from "lucide-react";
+import { Search, Filter, Download, ShieldAlert, TrendingUp, Users, CalendarDays, RefreshCcw, MessageSquare, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,10 +7,14 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuLabel,
   DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { mockLogs, revenueSeries, staffKPIs } from "@/lib/staffMockData";
-import { downloadCSV } from "@/lib/staffExport";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { toast } from "sonner";
+import { mockLogs, revenueSeries, staffKPIs, analyticsSeries, feedbackBreakdown } from "@/lib/staffMockData";
+import StatCard from "@/components/staff/StatCard";
+import { ExportReportDialog, type ExportField } from "@/components/staff/ExportReportDialog";
+import {
+  ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
+  LineChart, Line, Legend, PieChart, Pie, Cell, AreaChart, Area,
+} from "recharts";
+
 
 const severityStyles: Record<string, string> = {
   info: "bg-muted text-foreground/70 border-border",
@@ -18,9 +22,13 @@ const severityStyles: Record<string, string> = {
   critical: "bg-destructive/10 text-destructive border-destructive/30",
 };
 
+const chartTooltip = { background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 };
+
 export default function StaffReports() {
   const [search, setSearch] = useState("");
   const [severity, setSeverity] = useState<"all" | "info" | "warning" | "critical">("all");
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportKind, setExportKind] = useState<"analytics" | "logs">("analytics");
 
   const filtered = useMemo(() => mockLogs.filter((l) => {
     if (severity !== "all" && l.severity !== severity) return false;
@@ -28,36 +36,158 @@ export default function StaffReports() {
     return true;
   }), [search, severity]);
 
+  const latest = analyticsSeries[analyticsSeries.length - 1];
+  const prev = analyticsSeries[analyticsSeries.length - 2];
+  const delta = (a: number, b: number) => ((a - b) / b) * 100;
+
+  const openExport = (kind: "analytics" | "logs") => { setExportKind(kind); setExportOpen(true); };
+
+  const analyticsFields: ExportField[] = [
+    { key: "month", label: "Month", default: true },
+    { key: "users", label: "Users", default: true },
+    { key: "partners", label: "Partners", default: true },
+    { key: "properties", label: "Properties", default: true },
+    { key: "bookings", label: "Bookings", default: true },
+    { key: "refunds", label: "Refunds", default: true },
+    { key: "disputes", label: "Disputes" },
+    { key: "logs", label: "Log events" },
+    { key: "feedback", label: "Feedback" },
+  ];
+  const logFields: ExportField[] = [
+    { key: "id", label: "ID", default: true },
+    { key: "timestamp", label: "Timestamp", default: true },
+    { key: "actor", label: "Actor", default: true },
+    { key: "action", label: "Action", default: true },
+    { key: "target", label: "Target", default: true },
+    { key: "severity", label: "Severity", default: true },
+    { key: "ip", label: "IP" },
+  ];
+
   return (
     <div className="space-y-5 sm:space-y-6">
-      <div>
-        <h1 className="text-xl sm:text-2xl font-display font-bold">Reports & Logs</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-1">Platform analytics and full audit trail.</p>
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-display font-bold">Reports & Logs</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">Platform-wide analytics, feedback, disputes and full audit trail.</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => openExport("analytics")}>
+          <Download size={14} className="mr-1.5" /> Export report
+        </Button>
       </div>
 
-      {/* Bookings chart */}
+      {/* KPI grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard label="Users" value={latest.users.toLocaleString()} delta={delta(latest.users, prev.users)} icon={Users} tone="accent" series={analyticsSeries.map((a) => ({ v: a.users }))} />
+        <StatCard label="Bookings" value={latest.bookings} delta={delta(latest.bookings, prev.bookings)} icon={CalendarDays} tone="success" series={analyticsSeries.map((a) => ({ v: a.bookings }))} />
+        <StatCard label="Refunds" value={latest.refunds} delta={delta(latest.refunds, prev.refunds)} icon={RefreshCcw} tone="warning" series={analyticsSeries.map((a) => ({ v: a.refunds }))} />
+        <StatCard label="Disputes" value={latest.disputes} delta={delta(latest.disputes, prev.disputes)} icon={AlertTriangle} tone="danger" series={analyticsSeries.map((a) => ({ v: a.disputes }))} />
+      </div>
+
+      {/* Combined analytics chart */}
       <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h2 className="text-sm sm:text-base font-display font-semibold">Bookings by month</h2>
+            <h2 className="text-sm sm:text-base font-display font-semibold">Platform activity</h2>
             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-              <TrendingUp size={12} className="text-emerald-500" /> +{staffKPIs.growth}% MoM
+              <TrendingUp size={12} className="text-emerald-500" /> Users vs bookings · +{staffKPIs.growth}% MoM
             </p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => { downloadCSV("bookings-by-month.csv", revenueSeries); toast.success("Report exported"); }}>
-            <Download size={14} className="mr-1.5" /> Export
-          </Button>
         </div>
-        <div className="h-48 sm:h-64 -ml-3">
+        <div className="h-56 sm:h-72 -ml-3">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={revenueSeries}>
+            <LineChart data={analyticsSeries}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
               <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-              <Bar dataKey="bookings" fill="hsl(var(--accent))" radius={[6, 6, 0, 0]} />
-            </BarChart>
+              <Tooltip contentStyle={chartTooltip} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line type="monotone" dataKey="users"    stroke="hsl(var(--accent))"     strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="bookings" stroke="hsl(142 71% 45%)"       strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="properties" stroke="hsl(217 91% 60%)"     strokeWidth={2} dot={false} />
+            </LineChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Split: refunds/disputes + feedback breakdown */}
+      <div className="grid lg:grid-cols-2 gap-3 sm:gap-4">
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm sm:text-base font-display font-semibold">Refunds & disputes</h2>
+            <Badge variant="outline" className="text-[10px]">last 6 mo.</Badge>
+          </div>
+          <div className="h-48 -ml-3">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={analyticsSeries}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip contentStyle={chartTooltip} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Bar dataKey="refunds"  fill="hsl(38 92% 50%)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="disputes" fill="hsl(0 84% 60%)"  radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <MessageSquare size={15} className="text-accent" />
+              <h2 className="text-sm sm:text-base font-display font-semibold">Guest feedback</h2>
+            </div>
+            <Badge variant="outline" className="text-[10px]">{feedbackBreakdown.reduce((s, f) => s + f.value, 0)} reviews</Badge>
+          </div>
+          <div className="h-48">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={feedbackBreakdown} dataKey="value" nameKey="name" innerRadius={40} outerRadius={70} paddingAngle={2}>
+                  {feedbackBreakdown.map((entry) => <Cell key={entry.name} fill={entry.color} />)}
+                </Pie>
+                <Tooltip contentStyle={chartTooltip} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Log volume + revenue */}
+      <div className="grid lg:grid-cols-2 gap-3 sm:gap-4">
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
+          <h2 className="text-sm sm:text-base font-display font-semibold mb-3">Audit log volume</h2>
+          <div className="h-40 -ml-3">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={analyticsSeries}>
+                <defs>
+                  <linearGradient id="logsG" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"  stopColor="hsl(var(--accent))" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="hsl(var(--accent))" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip contentStyle={chartTooltip} />
+                <Area type="monotone" dataKey="logs" stroke="hsl(var(--accent))" strokeWidth={2} fill="url(#logsG)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
+          <h2 className="text-sm sm:text-base font-display font-semibold mb-3">Bookings by month</h2>
+          <div className="h-40 -ml-3">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={revenueSeries}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip contentStyle={chartTooltip} />
+                <Bar dataKey="bookings" fill="hsl(var(--accent))" radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
@@ -90,7 +220,7 @@ export default function StaffReports() {
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button variant="outline" size="sm" className="h-9" onClick={() => { downloadCSV("audit-logs.csv", filtered); toast.success(`Exported ${filtered.length} logs`); }}>
+            <Button variant="outline" size="sm" className="h-9" onClick={() => openExport("logs")}>
               <Download size={14} className="mr-1.5" /> Export
             </Button>
           </div>
@@ -117,6 +247,27 @@ export default function StaffReports() {
           ))}
         </div>
       </div>
+
+      <ExportReportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        title={exportKind === "analytics" ? "Export analytics report" : "Export audit logs"}
+        fileBase={exportKind === "analytics" ? "analytics" : "audit-logs"}
+        fields={exportKind === "analytics" ? analyticsFields : logFields}
+        data={(exportKind === "analytics" ? analyticsSeries : filtered) as unknown as Record<string, unknown>[]}
+        dateKey={exportKind === "logs" ? "timestamp" : undefined}
+        groupOptions={exportKind === "logs" ? [
+          { key: "severity", label: "Severity" },
+          { key: "actor",    label: "Actor" },
+        ] : undefined}
+        templates={exportKind === "analytics" ? [
+          { key: "summary",  label: "Summary",  fields: ["month", "users", "bookings", "refunds"] },
+          { key: "detailed", label: "Detailed", fields: analyticsFields.map((f) => f.key) },
+        ] : [
+          { key: "summary",  label: "Summary",  fields: ["id", "timestamp", "action", "severity"] },
+          { key: "detailed", label: "Detailed", fields: logFields.map((f) => f.key) },
+        ]}
+      />
     </div>
   );
 }

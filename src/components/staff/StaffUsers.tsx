@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Filter, MoreVertical, Shield, Ban, CheckCircle2, Mail, UserPlus, Trash2, Download, Eye } from "lucide-react";
+import { Search, Filter, MoreVertical, Shield, Ban, CheckCircle2, Mail, UserPlus, Trash2, Download, Eye, Users, Briefcase, UserCheck, Clock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { mockUsers, type StaffUser } from "@/lib/staffMockData";
+import { mockUsers, analyticsSeries, type StaffUser } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
 import { downloadCSV } from "@/lib/staffExport";
+import StatCard from "@/components/staff/StatCard";
 import { toast } from "sonner";
 
 const statusStyles: Record<string, string> = {
@@ -93,6 +94,22 @@ export default function StaffUsers() {
           )}
         </div>
       </div>
+
+      {/* KPI cards */}
+      {(() => {
+        const clients = users.filter((u) => u.type === "client").length;
+        const partners = users.filter((u) => u.type === "partner").length;
+        const active = users.filter((u) => u.status === "active").length;
+        const pending = users.filter((u) => u.status === "pending").length;
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label="Total accounts" value={users.length} delta={8.7} icon={Users} tone="accent" series={analyticsSeries.map((a) => ({ v: a.users + a.partners }))} />
+            <StatCard label="Clients" value={clients} delta={9.1} icon={UserCheck} tone="success" series={analyticsSeries.map((a) => ({ v: a.users }))} />
+            <StatCard label="Partners" value={partners} delta={5.4} icon={Briefcase} tone="default" series={analyticsSeries.map((a) => ({ v: a.partners }))} />
+            <StatCard label="Pending approval" value={pending} hint={`${active} active`} icon={Clock} tone="warning" series={analyticsSeries.map((a) => ({ v: Math.round(a.partners * 0.15) }))} />
+          </div>
+        );
+      })()}
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-2">

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { revenueSeries, staffKPIs } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
-import { downloadCSV } from "@/lib/staffExport";
+import { ExportReportDialog, type ExportField } from "@/components/staff/ExportReportDialog";
 import { toast } from "sonner";
 
 type Payout = { id: string; partner: string; amount: number; status: "pending" | "released" | "scheduled"; date: string };
@@ -27,6 +27,22 @@ const statusStyles: Record<Payout["status"], string> = {
 export default function StaffFinance() {
   const { can } = useStaffAuth();
   const [payouts, setPayouts] = useState<Payout[]>(initialPayouts);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportKind, setExportKind] = useState<"revenue" | "payouts">("revenue");
+  const openExport = (kind: "revenue" | "payouts") => { setExportKind(kind); setExportOpen(true); };
+
+  const revenueFields: ExportField[] = [
+    { key: "month",    label: "Month",    default: true },
+    { key: "revenue",  label: "Revenue",  default: true },
+    { key: "bookings", label: "Bookings", default: true },
+  ];
+  const payoutFields: ExportField[] = [
+    { key: "id",      label: "ID",      default: true },
+    { key: "partner", label: "Partner", default: true },
+    { key: "amount",  label: "Amount",  default: true },
+    { key: "status",  label: "Status",  default: true },
+    { key: "date",    label: "Date",    default: true },
+  ];
 
   const release = (id: string) => {
     setPayouts((p) => p.map((x) => (x.id === id ? { ...x, status: "released" } : x)));
@@ -76,7 +92,7 @@ export default function StaffFinance() {
       <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm sm:text-base font-display font-semibold">Revenue ledger</h2>
-          <Button size="sm" variant="outline" onClick={() => { downloadCSV("revenue-ledger.csv", revenueSeries); toast.success("Ledger exported (.csv)"); }}>
+          <Button size="sm" variant="outline" onClick={() => openExport("revenue")}>
             <Download size={14} className="mr-1.5" /> Export
           </Button>
         </div>
@@ -107,7 +123,7 @@ export default function StaffFinance() {
             <h2 className="text-sm sm:text-base font-display font-semibold">Partner payouts</h2>
             <Badge variant="outline" className="text-[10px]">{payouts.length}</Badge>
           </div>
-          <Button size="sm" variant="outline" onClick={() => { downloadCSV("payouts.csv", payouts); toast.success("Payouts exported"); }}>
+          <Button size="sm" variant="outline" onClick={() => openExport("payouts")}>
             <Download size={14} className="mr-1.5" /> Export
           </Button>
         </div>
@@ -131,6 +147,27 @@ export default function StaffFinance() {
           ))}
         </div>
       </div>
+
+      <ExportReportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        title={exportKind === "revenue" ? "Export revenue report" : "Export payouts report"}
+        fileBase={exportKind === "revenue" ? "revenue-ledger" : "payouts"}
+        fields={exportKind === "revenue" ? revenueFields : payoutFields}
+        data={(exportKind === "revenue" ? revenueSeries : payouts) as unknown as Record<string, unknown>[]}
+        dateKey={exportKind === "payouts" ? "date" : undefined}
+        groupOptions={exportKind === "payouts" ? [
+          { key: "status",  label: "Status" },
+          { key: "partner", label: "Partner" },
+        ] : undefined}
+        templates={exportKind === "revenue" ? [
+          { key: "summary",  label: "Summary",  fields: ["month", "revenue"] },
+          { key: "detailed", label: "Detailed", fields: revenueFields.map((f) => f.key) },
+        ] : [
+          { key: "summary",  label: "Summary",  fields: ["id", "partner", "amount", "status"] },
+          { key: "detailed", label: "Detailed", fields: payoutFields.map((f) => f.key) },
+        ]}
+      />
     </div>
   );
 }

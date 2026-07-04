@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Filter, RefreshCcw, XCircle, Eye, Download } from "lucide-react";
+import { Search, Filter, RefreshCcw, XCircle, Eye, Download, CalendarDays, TrendingUp, Wallet, Ban } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,10 +10,11 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { mockStaffBookings, type StaffBooking } from "@/lib/staffMockData";
+import { mockStaffBookings, analyticsSeries, type StaffBooking } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
 import { useStaffStore } from "@/lib/staffSupport";
-
+import StatCard from "@/components/staff/StatCard";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { downloadCSV } from "@/lib/staffExport";
 import { toast } from "sonner";
 
@@ -80,6 +81,83 @@ export default function StaffBookings() {
         <Button size="sm" variant="outline" onClick={exportItems}><Download size={14} className="mr-1.5" /> Export</Button>
       </div>
 
+      {/* KPI cards */}
+      {(() => {
+        const total = items.length;
+        const active = items.filter((b) => b.status === "confirmed" || b.status === "checked_in").length;
+        const refundsPending = items.filter((b) => b.status === "refund_pending");
+        const cancelled = items.filter((b) => b.status === "cancelled").length;
+        const revenue = items.filter((b) => b.status !== "cancelled").reduce((s, b) => s + b.total, 0);
+        const refundValue = refundsPending.reduce((s, b) => s + (b.refundAmount ?? b.total * 0.5), 0);
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label="Total bookings" value={total} delta={7.2} icon={CalendarDays} tone="accent" series={analyticsSeries.map((a) => ({ v: a.bookings }))} />
+            <StatCard label="Active" value={active} delta={4.6} icon={TrendingUp} tone="success" series={analyticsSeries.map((a) => ({ v: Math.round(a.bookings * 0.65) }))} />
+            <StatCard label="Refunds pending" value={refundsPending.length} hint={`€${refundValue.toLocaleString()}`} icon={RefreshCcw} tone="warning" series={analyticsSeries.map((a) => ({ v: a.refunds }))} />
+            <StatCard label="Cancellations" value={cancelled} delta={-2.1} icon={Ban} tone="danger" series={analyticsSeries.map((a) => ({ v: Math.round(a.refunds * 1.3) }))} />
+          </div>
+        );
+      })()}
+
+      {/* Evolution chart */}
+      <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-sm sm:text-base font-display font-semibold">Bookings evolution</h2>
+            <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
+              <Wallet size={11} /> Volume vs refunds · last 6 months
+            </p>
+          </div>
+        </div>
+        <div className="h-40 sm:h-56 -ml-3">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={analyticsSeries}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+              <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
+              <Bar dataKey="bookings" fill="hsl(var(--accent))" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="refunds" fill="hsl(38 92% 50%)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Refund processing focus panel */}
+      {(() => {
+        const pend = items.filter((b) => b.status === "refund_pending");
+        if (pend.length === 0) return null;
+        return (
+          <div className="bg-amber-500/5 border border-amber-500/30 rounded-xl p-3 sm:p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <RefreshCcw size={16} className="text-amber-600" />
+                <h2 className="text-sm sm:text-base font-display font-semibold">Refunds awaiting action</h2>
+                <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-600 border-amber-500/30">{pend.length}</Badge>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-2">
+              {pend.map((b) => (
+                <div key={b.id} className="bg-card border border-border rounded-lg p-3 flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold truncate">{b.guest}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">
+                      <span className="font-mono">{b.id}</span> · {b.hotel} · €{b.total.toLocaleString()}
+                    </div>
+                  </div>
+                  {can("refunds.process") && (
+                    <Button size="sm" className="h-8 bg-accent text-accent-foreground shrink-0" onClick={() => setConfirmRefund(b)}>
+                      <RefreshCcw size={12} className="mr-1" /> Process
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
+
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -103,6 +181,11 @@ export default function StaffBookings() {
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm sm:text-base font-display font-semibold">Recent bookings</h2>
+        <span className="text-[11px] text-muted-foreground">{filtered.length} result{filtered.length === 1 ? "" : "s"}</span>
       </div>
 
       <div className="bg-card border border-border rounded-xl shadow-soft divide-y divide-border">

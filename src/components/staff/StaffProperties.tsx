@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, CheckCircle2, XCircle, Flag, Eye, Download, Pencil, Trash2 } from "lucide-react";
+import { Search, Filter, CheckCircle2, XCircle, Flag, Eye, Download, Pencil, Trash2, Building2, Clock, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +11,13 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { mockProperties, type StaffProperty } from "@/lib/staffMockData";
+import { mockProperties, analyticsSeries, type StaffProperty } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
 import { useStaffStore } from "@/lib/staffSupport";
-
+import StatCard from "@/components/staff/StatCard";
 import { ExportReportDialog, type ExportField } from "@/components/staff/ExportReportDialog";
 import { toast } from "sonner";
+
 
 
 const statusStyles: Record<string, string> = {
@@ -112,6 +113,22 @@ export default function StaffProperties() {
         </div>
         <Button size="sm" variant="outline" onClick={() => setExportOpen(true)}><Download size={14} className="mr-1.5" /> Export</Button>
       </div>
+
+      {/* KPI cards */}
+      {(() => {
+        const approved = items.filter((p) => p.status === "approved").length;
+        const pending  = items.filter((p) => p.status === "pending").length;
+        const flagged  = items.filter((p) => p.status === "flagged").length;
+        const rejected = items.filter((p) => p.status === "rejected").length;
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label="Total properties" value={items.length} delta={6.3} icon={Building2} tone="accent" series={analyticsSeries.map((a) => ({ v: a.properties }))} />
+            <StatCard label="Approved" value={approved} delta={4.9} icon={CheckCircle2} tone="success" series={analyticsSeries.map((a) => ({ v: Math.round(a.properties * 0.82) }))} />
+            <StatCard label="Pending review" value={pending} hint="awaiting action" icon={Clock} tone="warning" series={analyticsSeries.map((a) => ({ v: Math.round(a.properties * 0.06) }))} />
+            <StatCard label="Flagged / rejected" value={flagged + rejected} delta={-1.4} icon={ShieldAlert} tone="danger" series={analyticsSeries.map((a) => ({ v: Math.round(a.properties * 0.04) }))} />
+          </div>
+        );
+      })()}
 
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
