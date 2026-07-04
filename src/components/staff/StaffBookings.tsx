@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Search, Filter, RefreshCcw, XCircle, Eye, Download } from "lucide-react";
+import { Search, Filter, RefreshCcw, XCircle, Eye, Download, CalendarDays, TrendingUp, Wallet, Ban } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,10 +10,11 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
-import { mockStaffBookings, type StaffBooking } from "@/lib/staffMockData";
+import { mockStaffBookings, analyticsSeries, type StaffBooking } from "@/lib/staffMockData";
 import { useStaffAuth } from "@/lib/staffRoles";
 import { useStaffStore } from "@/lib/staffSupport";
-
+import StatCard from "@/components/staff/StatCard";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { downloadCSV } from "@/lib/staffExport";
 import { toast } from "sonner";
 
