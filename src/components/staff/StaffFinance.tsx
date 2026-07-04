@@ -123,7 +123,7 @@ export default function StaffFinance() {
             <h2 className="text-sm sm:text-base font-display font-semibold">Partner payouts</h2>
             <Badge variant="outline" className="text-[10px]">{payouts.length}</Badge>
           </div>
-          <Button size="sm" variant="outline" onClick={() => { downloadCSV("payouts.csv", payouts); toast.success("Payouts exported"); }}>
+          <Button size="sm" variant="outline" onClick={() => openExport("payouts")}>
             <Download size={14} className="mr-1.5" /> Export
           </Button>
         </div>
