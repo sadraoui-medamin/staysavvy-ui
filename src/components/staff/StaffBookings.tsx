@@ -183,6 +183,11 @@ export default function StaffBookings() {
         </DropdownMenu>
       </div>
 
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm sm:text-base font-display font-semibold">Recent bookings</h2>
+        <span className="text-[11px] text-muted-foreground">{filtered.length} result{filtered.length === 1 ? "" : "s"}</span>
+      </div>
+
       <div className="bg-card border border-border rounded-xl shadow-soft divide-y divide-border">
         {filtered.length === 0 && <div className="p-8 text-center text-sm text-muted-foreground">No bookings match.</div>}
         {filtered.map((b) => (
