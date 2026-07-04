@@ -92,7 +92,7 @@ export default function StaffFinance() {
       <div className="bg-card border border-border rounded-xl p-3 sm:p-5 shadow-soft">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm sm:text-base font-display font-semibold">Revenue ledger</h2>
-          <Button size="sm" variant="outline" onClick={() => { downloadCSV("revenue-ledger.csv", revenueSeries); toast.success("Ledger exported (.csv)"); }}>
+          <Button size="sm" variant="outline" onClick={() => openExport("revenue")}>
             <Download size={14} className="mr-1.5" /> Export
           </Button>
         </div>
