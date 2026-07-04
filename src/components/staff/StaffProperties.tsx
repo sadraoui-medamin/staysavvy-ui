@@ -114,6 +114,22 @@ export default function StaffProperties() {
         <Button size="sm" variant="outline" onClick={() => setExportOpen(true)}><Download size={14} className="mr-1.5" /> Export</Button>
       </div>
 
+      {/* KPI cards */}
+      {(() => {
+        const approved = items.filter((p) => p.status === "approved").length;
+        const pending  = items.filter((p) => p.status === "pending").length;
+        const flagged  = items.filter((p) => p.status === "flagged").length;
+        const rejected = items.filter((p) => p.status === "rejected").length;
+        return (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label="Total properties" value={items.length} delta={6.3} icon={Building2} tone="accent" series={analyticsSeries.map((a) => ({ v: a.properties }))} />
+            <StatCard label="Approved" value={approved} delta={4.9} icon={CheckCircle2} tone="success" series={analyticsSeries.map((a) => ({ v: Math.round(a.properties * 0.82) }))} />
+            <StatCard label="Pending review" value={pending} hint="awaiting action" icon={Clock} tone="warning" series={analyticsSeries.map((a) => ({ v: Math.round(a.properties * 0.06) }))} />
+            <StatCard label="Flagged / rejected" value={flagged + rejected} delta={-1.4} icon={ShieldAlert} tone="danger" series={analyticsSeries.map((a) => ({ v: Math.round(a.properties * 0.04) }))} />
+          </div>
+        );
+      })()}
+
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
