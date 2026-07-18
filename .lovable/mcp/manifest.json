@@ -1,0 +1,141 @@
+{
+  "version": 1,
+  "sdk_version": "0.23.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "stayvista-mcp",
+      "version": "0.1.0",
+      "title": "StayVista MCP"
+    },
+    "tools": [
+      {
+        "name": "search_hotels",
+        "title": "Search hotels",
+        "description": "Search the StayVista hotel catalog by destination, category, star rating, and price range.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Free-text match against name, location, or description.",
+              "type": "string"
+            },
+            "location": {
+              "description": "Filter by destination substring, e.g. 'Paris' or 'Morocco'.",
+              "type": "string"
+            },
+            "category": {
+              "description": "Filter by category, e.g. 'Beach Resort', 'City Hotel'.",
+              "type": "string"
+            },
+            "minStarRating": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5
+            },
+            "maxPriceUsd": {
+              "description": "Maximum nightly starting price in USD.",
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "limit": {
+              "default": 10,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_hotel",
+        "title": "Get hotel details",
+        "description": "Retrieve full public details for a single hotel by its id.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Hotel id from search_hotels (e.g. '1', '12')."
+            }
+          },
+          "required": [
+            "id"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_destinations",
+        "title": "List destinations",
+        "description": "List every destination StayVista features, with how many properties each has.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "recommend_hotels",
+        "title": "Recommend hotels",
+        "description": "Recommend top-rated StayVista hotels for a travel style (beach, city, mountain, nature, cultural, luxury).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "style": {
+              "type": "string",
+              "enum": [
+                "beach",
+                "city",
+                "mountain",
+                "nature",
+                "cultural",
+                "luxury"
+              ],
+              "description": "Preferred travel style."
+            },
+            "limit": {
+              "default": 5,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "style"
+          ]
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
